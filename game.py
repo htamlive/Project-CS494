@@ -27,10 +27,13 @@ class MyGame(arcade.Window):
     def pop_state(self):
         if len(self.state_stack) > 1:
             self.state_stack.pop()
+        
+        self.current_state.on_update(0)
     
     def return_menu(self):
         while len(self.state_stack) > 1:
             self.state_stack.pop()
+
 
     @property
     def current_state(self):
@@ -59,6 +62,13 @@ class MyGame(arcade.Window):
 
     def on_update(self, delta_time: float):
         self.current_state.on_update(delta_time)
+
+    def on_key_press(self, symbol: int, modifiers: int):
+        self.current_state.on_key_press(symbol, modifiers)
+
+    def on_key_release(self, symbol: int, modifiers: int):
+        self.current_state.on_key_release(symbol, modifiers)
+
 
 
 def main():

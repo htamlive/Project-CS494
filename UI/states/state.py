@@ -15,6 +15,17 @@ class State:
         for button in self.buttons:
             button.on_update(delta_time)
 
+    def on_key_press(self, symbol: int, modifiers: int):
+        pass
+
+    def on_key_release(self, symbol: int, modifiers: int):
+        pass
+
+    def on_draw(self):
+        for button in self.buttons:
+            button.on_draw()
+
+
     def draw(self):
         for button in self.buttons:
             button.draw()

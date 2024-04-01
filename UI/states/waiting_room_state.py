@@ -1,5 +1,6 @@
 import arcade
 from .state import State
+from .game_play_state import GamePlayState
 from ..buttons import CustomButton, HoverLineButton
 from config.config import *
 
@@ -30,6 +31,8 @@ class WaitingRoomState(State):
         start_button.click_scale_factor = 0.5
         start_button.center_x = SCREEN_WIDTH // 2
         start_button.center_y = SCREEN_HEIGHT // 2 - 235
+
+        start_button.on_click = lambda : self.game.push_state(GamePlayState(self.game, mode))
 
         leave_button = HoverLineButton("resources/images/btnLeave.png", 0.8, line_color=arcade.color.RED)
         leave_button.click_scale_factor = 0.9

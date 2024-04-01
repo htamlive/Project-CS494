@@ -12,28 +12,52 @@ class CustomButton(arcade.Sprite):
         self.click_timer = 0
         self.click_scale_factor = 1.2
 
+        self.prev_mouse_position = [-1, -1]
+
+        self.is_enabled = True
+
     def on_mouse_motion(self, x, y, dx, dy):
-        if self.left <= x <= self.right and self.bottom <= y <= self.top:
+
+        self.prev_mouse_position = [x, y]
+
+        if self.left <= x <= self.right and self.bottom <= y <= self.top and self.is_enabled:
             self.is_hover = True
         else:
             self.is_hover = False
 
     def on_mouse_press(self, x, y, button, modifiers):
-        if self.is_hover:
+        if self.is_hover and self.is_enabled:
             self.is_clicked = True
             self.click_timer = self.click_animation_duration
 
     def on_update(self, delta_time: float = 1 / 60):
-        if self.is_clicked:
+        if self.is_clicked and self.is_enabled:
             self.click_timer -= delta_time
             if self.click_timer <= 0:
                 self.is_clicked = False
                 self.click_timer = 0
                 self.on_click()
 
+    def check_hover(self):
+        if self.left <= self.prev_mouse_position[0] <= self.right and self.bottom <= self.prev_mouse_position[1] <= self.top:
+            self.is_hover = True
+        else:
+            self.is_hover = False
+
+    def set_enabled(self, enabled, visible=True):
+        self.is_enabled = enabled
+        self.visible = visible
+
+        if(not self.is_enabled):
+            self.is_hover = False
+            self.is_clicked = False
+        else:
+            self.check_hover()
+        
+
 
     def draw(self, *, filter=None, pixelated=None, blend_function=None):
-        if self.is_clicked:
+        if self.is_clicked and self.is_enabled:
 
             arcade.draw_scaled_texture_rectangle(
                 self.center_x, self.center_y,
