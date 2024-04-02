@@ -5,6 +5,12 @@ class Proxy:
     def __init__(self):
         # connect to the server
 
+        '''
+        The following is the template for the functions that you need to implement
+
+        You can add more variables and functions if you need to. This can help you store some useful information
+        '''
+
         pass
 
     def on_update(self, delta_time):
@@ -14,6 +20,9 @@ class Proxy:
         pass
 
     def check_valid_name(self, name):
+        '''
+        If correct, please register the user to the game
+        '''
         return True
     
     def gen_quest(self):
@@ -37,6 +46,9 @@ class Proxy:
         return operand1, operator, operand2, result
     
     def check_answer(self, answer, stored_server_answer):
+        '''
+        you may retrieve the answer from the server instead of the stored_server_answer
+        '''
         result = Result.INCORRECT
         try:
             user_input = int(answer)
@@ -59,4 +71,7 @@ class Proxy:
         return 1
     
     def get_user_score(self, stored_score):
+        '''
+        You dont need to use the stored score. Just let it to match the calling
+        '''
         return stored_score
