@@ -14,7 +14,6 @@ class GamePlayState(State):
         super().__init__(game)
 
         self.history = [self.gen_quest()]
-        print(self.history)
         
         
         self.quest_title = arcade.load_texture("resources/images/questTitle.png")
@@ -76,10 +75,9 @@ class GamePlayState(State):
         self.next_button.center_x = SCREEN_WIDTH // 2
         self.next_button.center_y = SCREEN_HEIGHT // 2 - 230
         self.next_button.set_enabled(False, False)
-        self.next_button.on_click = lambda : self.on_next_quest()
-        #hide next button
         
-
+        self.next_button.on_click = lambda : self.on_next_quest()
+        
 
         leave_button = HoverLineButton("resources/images/btnLeave.png", 0.8, line_color=arcade.color.RED)
         leave_button.click_scale_factor = 0.9
@@ -90,8 +88,10 @@ class GamePlayState(State):
         leave_button.on_click = lambda : self.game.return_menu()
         
 
+        self.next_button.set_enabled(False, False)
 
         self.buttons.extend([self.go_button, leave_button, self.next_button])
+
 
     def init_input_box(self):
         return UIInputText(
@@ -110,11 +110,14 @@ class GamePlayState(State):
         self.ui_manager.add(self.input_box)
 
     def init_time(self):
-        return DEFAULT_TIME
+        initial_time = self.game.proxy.init_time()
+        return initial_time
+
     
     def update_time(self, dt):
-        self.timeleft -= dt
-        if self.timeleft <= 0:
+        still_playing = self.game.proxy.update_time_left(dt)
+        if not still_playing:
+            
             self.game.push_state(SummaryState(self.game, self.mode, self.current_score))
 
 
@@ -131,15 +134,17 @@ class GamePlayState(State):
 
         self.update_score()
 
-        self.next_button.set_enabled(True, True)
+
         self.go_button.set_enabled(False, False)
+        self.next_button.set_enabled(True, True)
+        
 
     def update_score(self):
         if self.result == Result.CORRECT:
             self.current_score += self.game.proxy.get_score()
 
     def on_next_quest(self):
-        if(self.next_button.is_enabled):
+        if(self.next_button.is_enabled and self.next_button.visible):
             # print('Next')
             self.history.append(self.gen_quest())
             self.result = None
@@ -149,12 +154,12 @@ class GamePlayState(State):
             self.next_button.set_enabled(False, False)
 
             
-    # def get_current_players(self):
-    #     return [
-    #         'Player 1',
-    #         'Player 2',
-    #         'Player 3',
-    #     ]
+    def get_current_players_with_scores(self):
+        return [
+            ('Player 1', 4),
+            ('Player 2', 2),
+            ('Player 3', 1),
+        ]
         
     def format_number(self, number : int) -> str:
         # format number with commas
@@ -182,6 +187,12 @@ class GamePlayState(State):
         arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 30, 
                                              texture_operator, scale=0.8)
             
+
+    def draw_leaderboard(self):
+        players = self.get_current_players_with_scores()
+        for idx, (player_name, score) in enumerate(players):
+            arcade.draw_text(player_name, SCREEN_WIDTH - 250, SCREEN_HEIGHT - 300 - idx * 40, arcade.color.BLACK, 20, font_name=self.font, align="right", width=100)
+            arcade.draw_text(str(score), SCREEN_WIDTH - 100, SCREEN_HEIGHT - 300 - idx * 40, arcade.color.BLACK, 20, font_name=self.font)
 
     def draw(self):
         super().draw()
@@ -224,6 +235,7 @@ class GamePlayState(State):
     def on_update(self, delta_time):
         super().on_update(delta_time)
         self.update_time(delta_time)
+        self.timeleft = self.game.proxy.get_time_left()
         self.ui_manager.on_update(delta_time)
 
     def on_key_release(self, symbol: int, modifiers: int):

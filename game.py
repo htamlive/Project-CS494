@@ -27,6 +27,10 @@ class MyGame(arcade.Window):
         self.proxy = Proxy()
 
     def push_state(self, new_state):
+        if(len(self.state_stack) > 0):
+            for button in self.current_state.buttons:
+                button.is_hover = False
+
         self.state_stack.append(new_state)
 
     def pop_state(self):
@@ -101,11 +105,9 @@ class MyGame(arcade.Window):
 
         if(self.is_notification_on()):
             for button in self.current_state.buttons:
-                button.set_enabled(False)
+                button.is_hover = False
 
         if(not self.is_notification_on()):
-            for button in self.current_state.buttons:
-                button.set_enabled(True)
             self.current_state.on_update(delta_time)
 
     def on_key_press(self, symbol: int, modifiers: int):

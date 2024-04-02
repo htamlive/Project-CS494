@@ -11,7 +11,7 @@ class Proxy:
         You can add more variables and functions if you need to. This can help you store some useful information
         '''
 
-        pass
+        self.time_left = DEFAULT_TIME
 
     def on_update(self, delta_time):
         '''
@@ -24,6 +24,12 @@ class Proxy:
         If correct, please register the user to the game
         '''
         return True
+    
+    def get_current_players(self):
+        '''
+        return the list of current players
+        '''
+        return ['Player 1', 'Player 2', 'Player 3']
     
     def gen_quest(self):
 
@@ -75,3 +81,22 @@ class Proxy:
         You dont need to use the stored score. Just let it to match the calling
         '''
         return stored_score
+    
+    def update_time_left(self, dt):
+        '''
+        update the time left
+        Return False if game over. Otherwise, return True
+        '''
+        
+        self.time_left -= dt
+        
+        if self.time_left <= 0:
+            return False
+        return True
+    
+    def get_time_left(self):
+        return self.time_left
+
+    def init_time(self):
+        self.time_left = DEFAULT_TIME
+        return DEFAULT_TIME

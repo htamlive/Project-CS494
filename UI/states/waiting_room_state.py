@@ -46,11 +46,7 @@ class WaitingRoomState(State):
 
             
     def get_current_players(self):
-        return [
-            'Player 1',
-            'Player 2',
-            'Player 3',
-        ]
+        return self.game.proxy.get_current_players()
 
 
     def draw(self):

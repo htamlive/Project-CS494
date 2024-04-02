@@ -65,8 +65,8 @@ class ImageButton(arcade.Sprite):
                 self.center_x, self.center_y,
                 self.texture, self.click_scale_factor, 0
             )
-        else:
-            super().draw(filter=filter, pixelated=pixelated, blend_function=blend_function)
+            # super().draw(filter=filter, pixelated=pixelated, blend_function=blend_function)
+            
 
 
 class HoverLineButton(ImageButton):
