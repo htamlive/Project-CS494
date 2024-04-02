@@ -1,5 +1,8 @@
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
 import struct
 from enum import Enum
+
 
 class MessageType(Enum):
     JOIN = 0x1
@@ -10,14 +13,15 @@ class MessageType(Enum):
     QUESTION = 0x5
     TIMEOUT = 0x6
     ANSWER = 0x7
-    RESULT = 0xa
+    RESULT = 0xA
 
-class Message:
-    def __init__(self):
-        pass
 
+class Message(ABC):
+    type: MessageType
+
+    @abstractmethod
     def pack(self):
-        raise NotImplementedError
+        pass
 
     @classmethod
     def unpack(cls, data):
@@ -28,17 +32,17 @@ class Message:
         raise ValueError("Unknown message type")
 
     @classmethod
+    @abstractmethod
     def unpack_data(cls, data):
-        raise NotImplementedError
+        pass
 
+
+@dataclass(frozen=True)
 class JoinMessage(Message):
     type = MessageType.JOIN
-    format = '<BI6s'
-
-    def __init__(self, room: int, name: str):
-        super().__init__()
-        self.room = room
-        self.name = name
+    format = "<BI6s"
+    room: int
+    name: str
 
     def pack(self):
         name_bytes = self.name.encode()
@@ -47,44 +51,41 @@ class JoinMessage(Message):
     @classmethod
     def unpack_data(cls, data):
         _, room, name = struct.unpack(cls.format, data)
-        name = name.decode().rstrip('\x00')  # Decode and strip null bytes
+        name = name.decode().rstrip("\x00")  # Decode and strip null bytes
         return cls(room, name)
 
+
+@dataclass(frozen=True)
 class JoinDenyMessage(Message):
     type = MessageType.JOIN_DENY
-    format = '<B'
-
-    def __init__(self):
-        super().__init__()
+    format = "<B"
 
     def pack(self):
         return struct.pack(self.format, self.type.value)
 
     @classmethod
-    def unpack_data(cls, data):
+    def unpack_data(cls, _):
         return cls()
 
+
+@dataclass(frozen=True)
 class JoinAckMessage(Message):
     type = MessageType.JOIN_ACK
-    format = '<B'
-
-    def __init__(self):
-        super().__init__()
+    format = "<B"
 
     def pack(self):
         return struct.pack(self.format, self.type.value)
 
     @classmethod
-    def unpack_data(cls, data):
+    def unpack_data(cls, _):
         return cls()
 
+
+@dataclass(frozen=True)
 class ReadyMessage(Message):
     type = MessageType.READY
-    format = '<B?'
-
-    def __init__(self, state: bool):
-        super().__init__()
-        self.state = state
+    format = "<B?"
+    state: bool
 
     def pack(self):
         return struct.pack(self.format, self.type.value, self.state)
@@ -93,60 +94,65 @@ class ReadyMessage(Message):
     def unpack_data(cls, data):
         _, state = struct.unpack(cls.format, data)
         return cls(state)
-    
+
+
+@dataclass(frozen=True)
 class StartGameMessage(Message):
     type = MessageType.START_GAME
-    format = '<BB'
-
-    def __init__(self, race_lenght: int):
-        super().__init__()
-        self.race_lenght = race_lenght
+    format = "<BB"
+    race_lenght: int
 
     def pack(self):
         return struct.pack(self.format, self.type.value, self.race_lenght)
-    
+
     @classmethod
     def unpack_data(cls, data):
         _, race_lenght = struct.unpack(cls.format, data)
         return cls(race_lenght)
-    
+
+
 class Operation(Enum):
     ADD = 0x1
     SUB = 0x1
     MUL = 0x2
     DIV = 0x3
 
+
+@dataclass(frozen=True)
 class QuestionMessage(Message):
     type = MessageType.QUESTION
-    format = '<BiiB'
+    format = "<BiiB"
+    first_number: int
+    second_number: int
+    operation: Operation
 
-    def __init__(self, first_number: int, second_number: int, operation: Operation):
-        super().__init__()
-        self.first_number = first_number
-        self.second_number = second_number
-        self.operation = operation
-    
     def pack(self):
-        return struct.pack(self.format, self.type.value, self.first_number, self.second_number, self.operation.value)
-    
+        return struct.pack(
+            self.format,
+            self.type.value,
+            self.first_number,
+            self.second_number,
+            self.operation.value,
+        )
+
     @classmethod
     def unpack_data(cls, data):
         _, first_number, second_number, operation = struct.unpack(cls.format, data)
         return cls(first_number, second_number, operation)
-    
+
+
+@dataclass(frozen=True)
 class TimeOutMessage(Message):
     type = MessageType.TIMEOUT
-    format = '<B'
-
-    def __init__(self):
-        super().__init__()
+    format = "<B"
 
     def pack(self):
         return struct.pack(self.format, self.type.value)
-    
+
     @classmethod
-    def unpack_data(cls, data):
+    def unpack_data(cls, _):
         return cls()
+
 
 if __name__ == "__main__":
     # Example usage:
@@ -181,11 +187,6 @@ if __name__ == "__main__":
     print("Unpacked Question Message:", Message.unpack(question_message_bytes))
 
 
-
-
-
-
-
 # # Define the format strings for each message type
 # JOIN_FORMAT = '<BIB6s'  # B: 1 byte, I: 4 bytes, 6s: 6 bytes
 # JOIN_DENY_FORMAT = '<B'
@@ -201,7 +202,7 @@ if __name__ == "__main__":
 
 #     def pack(self):
 #         return struct.pack(JOIN_FORMAT, self.type, self.room, len(self.name), self.name.encode())
-    
+
 #     def unpack(data):
 #         type, room, name_len = struct.unpack(JOIN_FORMAT, data[:7])
 #         name = struct.unpack(f'<{name_len}s', data[7:])[0].decode()
