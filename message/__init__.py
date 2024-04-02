@@ -1,3 +1,3 @@
-from .encoder import MessageEncoder
-from .decoder import MessageDecoder
+from .encoder import encode
+from .decoder import decode
 from .messages import *
