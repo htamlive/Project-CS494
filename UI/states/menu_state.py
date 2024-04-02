@@ -4,7 +4,7 @@ from ..buttons import HoverLineButton, ImageButton
 from .choose_mode_state import ChooseModeState
 from .setting_state import SettingsState
 from config.config import *
-from ..alert_notification import AlertNotification
+from ..alert_notification import AlertNotification, OKNotification
 
 class MenuState(State):
     def __init__(self, game):
@@ -33,11 +33,16 @@ class MenuState(State):
         play_button.on_click = lambda : self.game.push_state(ChooseModeState(self.game))
         # settings_button.on_click = lambda : self.game.push_state(SettingsState(self.game))
 
-        def on_click_setting():
-            self.game.show_alert()
-            print("clicked")
+        def on_ok():
+            self.game.turn_off_notification('setting notification')
 
-        settings_button.on_click = lambda : on_click_setting()
+
+        self.ok_notification = OKNotification("Setting feature is not available yet", on_ok = on_ok)
+
+        self.game.popups['setting notification'] = self.ok_notification
+
+
+        settings_button.on_click = lambda : self.game.show_popup('setting notification')
         quit_button.on_click = lambda : arcade.close_window()
 
         self.buttons.extend([play_button, settings_button, quit_button])

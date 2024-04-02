@@ -100,3 +100,13 @@ class Proxy:
     def init_time(self):
         self.time_left = DEFAULT_TIME
         return DEFAULT_TIME
+    
+    def get_current_players_with_scores(self):
+        '''
+        Sort in-order of score
+        '''
+        return [
+            ('Player 1', 4),
+            ('Player 2', 2),
+            ('Player 3', 1),
+        ]

@@ -14,6 +14,9 @@ class MyGame(arcade.Window):
         self.title = arcade.load_texture("resources/images/title.png")
         self.paper = arcade.load_texture("resources/images/paper.png")
 
+        self.blue_wizard = arcade.load_texture("resources/images/blueWizard.png")
+        self.white_wizard = arcade.load_texture("resources/images/whiteWizard.png")
+
         self.popups = dict()
 
         # Stack of states
@@ -61,6 +64,10 @@ class MyGame(arcade.Window):
 
         # Draw the paper
         arcade.draw_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50, 400, 500, self.paper)
+
+        arcade.draw_scaled_texture_rectangle(120, SCREEN_HEIGHT // 2 + 20, self.blue_wizard, 0.5)
+
+        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH - 150, 150, self.white_wizard, 0.5)
 
         
 

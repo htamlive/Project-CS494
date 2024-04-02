@@ -24,8 +24,6 @@ class SummaryState(State):
         self.back_button.center_x = SCREEN_WIDTH // 2
         self.back_button.center_y = SCREEN_HEIGHT // 2 - 230
 
-
-
         self.back_button.on_click = lambda : self.game.return_menu()
 
         self.buttons.extend([self.back_button])

@@ -19,6 +19,7 @@ class GamePlayState(State):
         self.quest_title = arcade.load_texture("resources/images/questTitle.png")
         self.time_title = arcade.load_texture("resources/images/timeTitle.png")
         self.score_title = arcade.load_texture("resources/images/scoreTitle.png")
+        self.leaderboard_title = arcade.load_texture("resources/images/leaderboardTitle.png")
 
 
         self.submission_box = arcade.load_texture("resources/images/submissionBox.png")
@@ -155,11 +156,7 @@ class GamePlayState(State):
 
             
     def get_current_players_with_scores(self):
-        return [
-            ('Player 1', 4),
-            ('Player 2', 2),
-            ('Player 3', 1),
-        ]
+        return self.game.proxy.get_current_players_with_scores()
         
     def format_number(self, number : int) -> str:
         # format number with commas
@@ -173,8 +170,6 @@ class GamePlayState(State):
         return f"{minutes:02}:{seconds:02}"
     
     def draw_quest(self):
-        
-
         operand1, operator, operand2, _ = self.history[-1]
 
         texture_operator = self.operators[operator]
@@ -191,8 +186,8 @@ class GamePlayState(State):
     def draw_leaderboard(self):
         players = self.get_current_players_with_scores()
         for idx, (player_name, score) in enumerate(players):
-            arcade.draw_text(player_name, SCREEN_WIDTH - 250, SCREEN_HEIGHT - 300 - idx * 40, arcade.color.BLACK, 20, font_name=self.font, align="right", width=100)
-            arcade.draw_text(str(score), SCREEN_WIDTH - 100, SCREEN_HEIGHT - 300 - idx * 40, arcade.color.BLACK, 20, font_name=self.font)
+            arcade.draw_text(player_name, SCREEN_WIDTH - 230, SCREEN_HEIGHT - 300 - idx * 40, arcade.color.BLACK, 20, font_name=self.font, align="right", width=100)
+            arcade.draw_text(str(score), SCREEN_WIDTH - 70, SCREEN_HEIGHT - 300 - idx * 40, arcade.color.BLACK, 20, font_name=self.font)
 
     def draw(self):
         super().draw()
@@ -205,6 +200,9 @@ class GamePlayState(State):
         arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH - 140, SCREEN_HEIGHT//2 + 200,
                                                 self.score_title, 0.5)
         
+        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH - 140, SCREEN_HEIGHT//2 + 80,
+                                                self.leaderboard_title,)
+        
         arcade.draw_scaled_texture_rectangle(150, SCREEN_HEIGHT//2 + 200,
                                                 self.time_title, 0.5)
         
@@ -216,6 +214,8 @@ class GamePlayState(State):
         self.draw_quest()
 
         self.ui_manager.draw()
+
+        self.draw_leaderboard()
 
         if(self.result):
             arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 80, 
