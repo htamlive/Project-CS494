@@ -24,8 +24,10 @@ class ChooseModeState(State):
         blitz_button.center_x = SCREEN_WIDTH // 2
         blitz_button.center_y = SCREEN_HEIGHT // 2 - 120 + 50
 
-        traditional_button.on_click = lambda : self.game.push_state(WaitingRoomState(game, Mode.TRADTIONAL))
-        blitz_button.on_click = lambda : self.game.push_state(WaitingRoomState(game, Mode.BLITZ))
+        self.mode = Mode.TRADITIONAL
+
+        traditional_button.on_click = lambda : self.set_mode(Mode.TRADITIONAL)
+        blitz_button.on_click = lambda : self.set_mode(Mode.BLITZ)
 
         self.buttons.extend([traditional_button, blitz_button])
 
@@ -35,11 +37,11 @@ class ChooseModeState(State):
             if self.check_valid_name(current_text):
                 self.input_popup.show_noti("Valid name", arcade.color.GREEN)
                 self.game.turn_off_notification('input name')
-                print(len(self.game.popups))
+                self.game.push_state(WaitingRoomState(self.game, self.mode))
             else:
                 self.input_popup.show_noti("Invalid name", arcade.color.RED)
 
-            
+        
 
 
         def on_cancel():
@@ -50,12 +52,15 @@ class ChooseModeState(State):
 
         self.game.popups['input name'] = self.input_popup
 
-        self.game.show_popup('input name')
         
-
+        
+    def set_mode(self, mode):
+        self.game.show_popup('input name')
+        self.mode = mode
+        
     
     def check_valid_name(self, name):
-        return False
+        return self.game.proxy.check_valid_name(name)
     
     def renew_input_box(self):
         self.ui_manager.remove(self.input_box)

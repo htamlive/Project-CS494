@@ -2,6 +2,7 @@ import arcade
 from UI.states.menu_state import MenuState
 from config.config import *
 from UI.alert_notification import AlertNotification
+from proxy import Proxy
 
 class MyGame(arcade.Window):
     def __init__(self):
@@ -22,6 +23,8 @@ class MyGame(arcade.Window):
         self.menu_state = MenuState(self)
 
         self.push_state(self.menu_state)
+
+        self.proxy = Proxy()
 
     def push_state(self, new_state):
         self.state_stack.append(new_state)
@@ -90,6 +93,9 @@ class MyGame(arcade.Window):
             self.current_state.on_mouse_press(x, y, button, modifiers)
 
     def on_update(self, delta_time: float):
+
+        self.proxy.on_update(delta_time)
+
         for _, box in self.popups.items():
             box.on_update(delta_time)
 

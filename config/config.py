@@ -6,5 +6,16 @@ DEFAULT_TIME = 5
 from enum import Enum
 
 class Mode(Enum):
-    TRADTIONAL = 1
+    TRADITIONAL = 1
     BLITZ = 2
+
+class Operator(Enum):
+    ADD = '+'
+    SUBTRACT = '-'
+    MULTIPLY = '*'
+    DIVIDE = '/'
+    MOD = '%'
+
+class Result(Enum):
+    CORRECT = 'Correct'
+    INCORRECT = 'Incorrect'

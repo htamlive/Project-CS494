@@ -8,20 +8,13 @@ from config.config import *
 import random
 from enum import Enum
 
-class Operator(Enum):
-    ADD = '+'
-    SUBTRACT = '-'
-    MULTIPLY = '*'
-    DIVIDE = '/'
-    MOD = '%'
-
-class Result(Enum):
-    CORRECT = 'Correct'
-    INCORRECT = 'Incorrect'
 
 class GamePlayState(State):
     def __init__(self, game, mode):
         super().__init__(game)
+
+        self.history = [self.gen_quest()]
+        print(self.history)
         
         
         self.quest_title = arcade.load_texture("resources/images/questTitle.png")
@@ -51,7 +44,7 @@ class GamePlayState(State):
             Operator.MOD: arcade.load_texture("resources/images/operators/modOperator.png"),
         }
 
-        self.history = [self.gen_quest()]
+        
 
         self.ui_manager = UIManager()
         self.ui_manager.enable()
@@ -126,34 +119,15 @@ class GamePlayState(State):
 
 
     def gen_quest(self):
-        operand1 = random.randint(1, 100)
-        operand2 = random.randint(1, 100)
-        operator = random.choice(list(Operator))
-        if operator == Operator.ADD:
-            result = operand1 + operand2
-        elif operator == Operator.SUBTRACT:
-            result = operand1 - operand2
-        elif operator == Operator.MULTIPLY:
-            result = operand1 * operand2
-        elif operator == Operator.DIVIDE:
-            result = operand1 // operand2
-        elif operator == Operator.MOD:
-            result = operand1 % operand2
+        return self.game.proxy.gen_quest()
 
-        return operand1, operator, operand2, result
     
 
     def on_submit(self):
         user_input = self.input_box.text
-        try:
-            user_input = int(user_input)
-            operand1, operator, operand2, result = self.history[-1]
-            if user_input == result:
-                self.result = Result.CORRECT
-            else:
-                self.result = Result.INCORRECT
-        except:
-            self.result = Result.INCORRECT
+        operand1, operator, operand2, result = self.history[-1]
+
+        self.result = self.game.proxy.check_answer(user_input, result)
 
         self.update_score()
 
@@ -162,7 +136,7 @@ class GamePlayState(State):
 
     def update_score(self):
         if self.result == Result.CORRECT:
-            self.current_score += 1
+            self.current_score += self.game.proxy.get_score()
 
     def on_next_quest(self):
         if(self.next_button.is_enabled):
@@ -194,6 +168,8 @@ class GamePlayState(State):
         return f"{minutes:02}:{seconds:02}"
     
     def draw_quest(self):
+        
+
         operand1, operator, operand2, _ = self.history[-1]
 
         texture_operator = self.operators[operator]

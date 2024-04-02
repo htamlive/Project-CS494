@@ -17,7 +17,7 @@ class SummaryState(State):
 
         self.font2 = arcade.load_font("resources/fonts/UTM ANDROGYNE.TTF")
 
-        self.score = score
+        self.score = self.game.proxy.get_user_score(score)
 
 
         self.back_button = HoverLineButton("resources/images/btnBack.png")
@@ -34,7 +34,7 @@ class SummaryState(State):
 
 
     def get_top(self):
-        return 1
+        return self.game.proxy.get_user_top()
 
 
     def draw(self):
