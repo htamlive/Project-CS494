@@ -1,9 +1,10 @@
 from .state import State
 import arcade
-from ..buttons import HoverLineButton
+from ..buttons import HoverLineButton, ImageButton
 from .choose_mode_state import ChooseModeState
 from .setting_state import SettingsState
 from config.config import *
+from ..alert_notification import AlertNotification
 
 class MenuState(State):
     def __init__(self, game):
@@ -30,13 +31,16 @@ class MenuState(State):
         
 
         play_button.on_click = lambda : self.game.push_state(ChooseModeState(self.game))
-        settings_button.on_click = lambda : self.game.push_state(SettingsState(self.game))
+        # settings_button.on_click = lambda : self.game.push_state(SettingsState(self.game))
+
+        def on_click_setting():
+            self.game.show_alert()
+            print("clicked")
+
+        settings_button.on_click = lambda : on_click_setting()
         quit_button.on_click = lambda : arcade.close_window()
 
         self.buttons.extend([play_button, settings_button, quit_button])
 
 
-    def draw(self):
-        super().draw()
-
-
+    

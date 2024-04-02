@@ -1,7 +1,7 @@
 import arcade
 from .state import State
 from .game_play_state import GamePlayState
-from ..buttons import CustomButton, HoverLineButton
+from ..buttons import ImageButton, HoverLineButton
 from config.config import *
 
 
@@ -27,7 +27,7 @@ class WaitingRoomState(State):
             
         self.players = self.get_current_players()
 
-        start_button = CustomButton("resources/images/btnStart.png", 0.4)
+        start_button = ImageButton("resources/images/btnStart.png", 0.4)
         start_button.click_scale_factor = 0.5
         start_button.center_x = SCREEN_WIDTH // 2
         start_button.center_y = SCREEN_HEIGHT // 2 - 235

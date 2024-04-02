@@ -1,7 +1,12 @@
+from arcade.gui import UIManager
+
 class State:
     def __init__(self, game):
         self.game = game
         self.buttons = []
+
+        self.ui_manager = UIManager()
+
         
     def on_mouse_motion(self, x, y, dx, dy):
         for button in self.buttons:
@@ -14,6 +19,8 @@ class State:
     def on_update(self, delta_time):
         for button in self.buttons:
             button.on_update(delta_time)
+
+        self.ui_manager.on_update(delta_time)
 
     def on_key_press(self, symbol: int, modifiers: int):
         pass

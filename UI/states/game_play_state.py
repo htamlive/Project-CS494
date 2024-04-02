@@ -3,7 +3,7 @@ from arcade.gui import UIManager
 from arcade.gui import UIInputText
 from .state import State
 from .summary_state import SummaryState
-from ..buttons import CustomButton, HoverLineButton
+from ..buttons import ImageButton, HoverLineButton
 from config.config import *
 import random
 from enum import Enum
@@ -28,7 +28,6 @@ class GamePlayState(State):
         self.time_title = arcade.load_texture("resources/images/timeTitle.png")
         self.score_title = arcade.load_texture("resources/images/scoreTitle.png")
 
-        self.mode_label = arcade.load_texture("resources/images/traditionalModeLabel.png")
 
         self.submission_box = arcade.load_texture("resources/images/submissionBox.png")
 
@@ -61,6 +60,8 @@ class GamePlayState(State):
         self.ui_manager.add(self.input_box)
 
         
+        self.mode = mode
+        self.mode_label = arcade.load_texture("resources/images/traditionalModeLabel.png")
 
         if(mode == Mode.BLITZ):
             self.mode_label = arcade.load_texture("resources/images/blitzModeLabel.png")
@@ -74,11 +75,11 @@ class GamePlayState(State):
             
         # self.players = self.get_current_players()
 
-        self.go_button = CustomButton("resources/images/btnGo.png")
+        self.go_button = ImageButton("resources/images/btnGo.png")
         self.go_button.center_x = SCREEN_WIDTH // 2
         self.go_button.center_y = SCREEN_HEIGHT // 2 - 235
 
-        self.next_button = CustomButton("resources/images/btnNext.png")
+        self.next_button = ImageButton("resources/images/btnNext.png")
         self.next_button.center_x = SCREEN_WIDTH // 2
         self.next_button.center_y = SCREEN_HEIGHT // 2 - 230
         self.next_button.set_enabled(False, False)
@@ -116,12 +117,12 @@ class GamePlayState(State):
         self.ui_manager.add(self.input_box)
 
     def init_time(self):
-        return 60
+        return DEFAULT_TIME
     
     def update_time(self, dt):
         self.timeleft -= dt
         if self.timeleft <= 0:
-            self.game.push_state(SummaryState(self.game, self.current_score))
+            self.game.push_state(SummaryState(self.game, self.mode, self.current_score))
 
 
     def gen_quest(self):

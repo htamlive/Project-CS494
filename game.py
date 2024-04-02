@@ -1,7 +1,7 @@
 import arcade
 from UI.states.menu_state import MenuState
 from config.config import *
-
+from UI.alert_notification import AlertNotification
 
 class MyGame(arcade.Window):
     def __init__(self):
@@ -12,6 +12,8 @@ class MyGame(arcade.Window):
         self.background = arcade.load_texture("resources/images/background.png")
         self.title = arcade.load_texture("resources/images/title.png")
         self.paper = arcade.load_texture("resources/images/paper.png")
+
+        self.popups = dict()
 
         # Stack of states
         self.state_stack = []
@@ -28,7 +30,6 @@ class MyGame(arcade.Window):
         if len(self.state_stack) > 1:
             self.state_stack.pop()
         
-        self.current_state.on_update(0)
     
     def return_menu(self):
         while len(self.state_stack) > 1:
@@ -38,6 +39,9 @@ class MyGame(arcade.Window):
     @property
     def current_state(self):
         return self.state_stack[-1]
+    
+    def show_popup(self, name):
+        self.popups[name].set_enabled(True)
 
     def on_draw(self):
         arcade.start_render()
@@ -51,23 +55,60 @@ class MyGame(arcade.Window):
         # Draw the paper
         arcade.draw_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50, 400, 500, self.paper)
 
+        
+
         if(self.current_state):
             self.current_state.draw()
 
+        for _, box in self.popups.items():
+            box.draw()
+
+    def turn_off_notification(self, name):
+        self.popups[name].set_enabled(False)
+
+    def remove_notification(self, name):
+        self.popups[name].set_enabled(False)
+        self.popups.pop(name)
+
+    def is_notification_on(self):
+        for _, box in self.popups.items():
+            if box.enabled:
+                return True
+
     def on_mouse_motion(self, x, y, dx, dy):
-        self.current_state.on_mouse_motion(x, y, dx, dy)
+        for _, box in self.popups.items():
+            box.on_mouse_motion(x, y, dx, dy)
+
+        if(not self.is_notification_on()):
+            self.current_state.on_mouse_motion(x, y, dx, dy)
 
     def on_mouse_press(self, x, y, button, modifiers):
-        self.current_state.on_mouse_press(x, y, button, modifiers)
+        for _, box in self.popups.items():
+            box.on_mouse_press(x, y, button, modifiers)
+
+        if(not self.is_notification_on()):
+            self.current_state.on_mouse_press(x, y, button, modifiers)
 
     def on_update(self, delta_time: float):
-        self.current_state.on_update(delta_time)
+        for _, box in self.popups.items():
+            box.on_update(delta_time)
+
+        if(self.is_notification_on()):
+            for button in self.current_state.buttons:
+                button.set_enabled(False)
+
+        if(not self.is_notification_on()):
+            for button in self.current_state.buttons:
+                button.set_enabled(True)
+            self.current_state.on_update(delta_time)
 
     def on_key_press(self, symbol: int, modifiers: int):
-        self.current_state.on_key_press(symbol, modifiers)
+        if(not self.is_notification_on()):
+            self.current_state.on_key_press(symbol, modifiers)
 
     def on_key_release(self, symbol: int, modifiers: int):
-        self.current_state.on_key_release(symbol, modifiers)
+        if(not self.is_notification_on()):
+            self.current_state.on_key_release(symbol, modifiers)
 
 
 

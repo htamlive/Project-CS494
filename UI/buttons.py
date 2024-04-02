@@ -1,6 +1,6 @@
 import arcade
 
-class CustomButton(arcade.Sprite):
+class ImageButton(arcade.Sprite):
     def __init__(self, image, scale=1):
         super().__init__(image, scale)
 
@@ -43,6 +43,7 @@ class CustomButton(arcade.Sprite):
             self.is_hover = True
         else:
             self.is_hover = False
+            self.is_clicked = False
 
     def set_enabled(self, enabled, visible=True):
         self.is_enabled = enabled
@@ -57,8 +58,9 @@ class CustomButton(arcade.Sprite):
 
 
     def draw(self, *, filter=None, pixelated=None, blend_function=None):
-        if self.is_clicked and self.is_enabled:
-
+        
+        if self.is_enabled:
+            
             arcade.draw_scaled_texture_rectangle(
                 self.center_x, self.center_y,
                 self.texture, self.click_scale_factor, 0
@@ -67,7 +69,7 @@ class CustomButton(arcade.Sprite):
             super().draw(filter=filter, pixelated=pixelated, blend_function=blend_function)
 
 
-class HoverLineButton(CustomButton):
+class HoverLineButton(ImageButton):
     def __init__(self, image, scale=1, line_color=arcade.color.BLACK):
         super().__init__(image, scale)
 
@@ -83,7 +85,7 @@ class HoverLineButton(CustomButton):
     def draw(self):
         super().draw()
 
-        if self.is_hover:
+        if self.is_hover and self.is_enabled:
             arcade.draw_line(
                 self.center_x - self.hovered_line_current_width / 2,
                 self.center_y - self.height / 2 - self.line_height / 2,
