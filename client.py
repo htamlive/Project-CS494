@@ -1,8 +1,6 @@
 import tkinter as tk
-from tkinter import messagebox
 import threading
 import socket
-import struct
 from message import *
 
 class GameClient:
