@@ -72,6 +72,8 @@ class GamePlayState(State):
         self.go_button.center_x = SCREEN_WIDTH // 2
         self.go_button.center_y = SCREEN_HEIGHT // 2 - 235
 
+        self.go_button.on_click = lambda : self.on_submit()
+
         self.next_button = ImageButton("resources/images/btnNext.png")
         self.next_button.center_x = SCREEN_WIDTH // 2
         self.next_button.center_y = SCREEN_HEIGHT // 2 - 230
@@ -85,8 +87,12 @@ class GamePlayState(State):
         leave_button.center_x = SCREEN_WIDTH // 2 + 150
         leave_button.center_y = SCREEN_HEIGHT // 2 + 160
 
-        self.go_button.on_click = lambda : self.on_submit()
-        leave_button.on_click = lambda : self.game.return_menu()
+        def on_leave():
+            self.game.proxy.leave_game()
+            self.game.return_menu()
+
+        
+        leave_button.on_click = on_leave
         
 
         self.next_button.set_enabled(False, False)

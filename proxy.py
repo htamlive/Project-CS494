@@ -51,6 +51,7 @@ class Proxy:
     def leave_game(self):
         '''
         leave the game
+        This function is used when the user clicks the leave button in waiting room or game play state
         '''
         pass
     
