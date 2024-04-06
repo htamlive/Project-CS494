@@ -34,7 +34,7 @@ class ChooseModeState(State):
 
         def on_ok():
             current_text = self.input_popup.get_current_text()
-            if self.check_valid_name(current_text):
+            if self.register_with_name(current_text):
                 self.input_popup.show_noti("Valid name", arcade.color.GREEN)
                 self.game.turn_off_notification('input name')
                 self.game.push_state(WaitingRoomState(self.game, self.mode))
@@ -59,8 +59,8 @@ class ChooseModeState(State):
         self.mode = mode
         
     
-    def check_valid_name(self, name):
-        return self.game.proxy.check_valid_name(name)
+    def register_with_name(self, name):
+        return self.game.proxy.register(name, self.mode)
     
     def renew_input_box(self):
         self.ui_manager.remove(self.input_box)

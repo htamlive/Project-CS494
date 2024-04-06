@@ -12,17 +12,21 @@ class Proxy:
         '''
 
         self.time_left = DEFAULT_TIME
+        self.dummy_test_time = 0
+        self.current_mode = None
 
     def on_update(self, delta_time):
         '''
         This function is called every frame
         '''
-        pass
+        self.dummy_test_time += delta_time
 
-    def check_valid_name(self, name):
+    def register(self, name, mode):
         '''
         If correct, please register the user to the game
+        The player will be in ready state
         '''
+        self.current_mode = mode
         return True
     
     def get_current_players(self):
@@ -30,6 +34,25 @@ class Proxy:
         return the list of current players
         '''
         return ['Player 1', 'Player 2', 'Player 3']
+    
+    def is_game_started(self):
+        '''
+        If the room is full, the game will be started
+        return True if the game is started. Otherwise, return False
+        '''
+        return self.dummy_test_time > 10
+    
+    def get_mode(self):
+        '''
+        return the mode of the game
+        '''
+        return self.current_mode
+    
+    def leave_game(self):
+        '''
+        leave the game
+        '''
+        pass
     
     def gen_quest(self):
 
@@ -85,6 +108,7 @@ class Proxy:
     def update_time_left(self, dt):
         '''
         update the time left
+        This will update frame by frame. The return value will be used to check if the game is over
         Return False if game over. Otherwise, return True
         '''
         
@@ -98,6 +122,9 @@ class Proxy:
         return self.time_left
 
     def init_time(self):
+        '''
+        Initialize the time for the user when the game starts
+        '''
         self.time_left = DEFAULT_TIME
         return DEFAULT_TIME
     

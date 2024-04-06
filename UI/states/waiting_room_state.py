@@ -27,22 +27,30 @@ class WaitingRoomState(State):
             
         self.players = self.get_current_players()
 
-        start_button = ImageButton("resources/images/btnStart.png", 0.4)
-        start_button.click_scale_factor = 0.5
-        start_button.center_x = SCREEN_WIDTH // 2
-        start_button.center_y = SCREEN_HEIGHT // 2 - 235
+        # start_button = ImageButton("resources/images/btnStart.png", 0.4)
+        # start_button.click_scale_factor = 0.5
+        # start_button.center_x = SCREEN_WIDTH // 2
+        # start_button.center_y = SCREEN_HEIGHT // 2 - 235
 
-        start_button.on_click = lambda : self.game.push_state(GamePlayState(self.game, mode))
+        # start_button.on_click = lambda : self.game.push_state(GamePlayState(self.game, mode))
 
         leave_button = HoverLineButton("resources/images/btnLeave.png", 0.8, line_color=arcade.color.RED)
         leave_button.click_scale_factor = 0.9
         leave_button.center_x = SCREEN_WIDTH // 2 + 150
         leave_button.center_y = SCREEN_HEIGHT // 2 + 160
 
-        leave_button.on_click = lambda : self.game.return_menu()
+        def on_leave():
+            self.game.proxy.leave_game()
+            self.game.return_menu()
+
+        leave_button.on_click = on_leave
 
 
-        self.buttons.extend([start_button, leave_button])
+        self.buttons.extend([leave_button])
+
+    def on_update(self, delta_time):
+        if(self.game.proxy.is_game_started()):
+            self.game.push_state(GamePlayState(self.game, self.game.proxy.get_mode()))
 
             
     def get_current_players(self):
@@ -56,6 +64,9 @@ class WaitingRoomState(State):
         
         arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2 - 140, SCREEN_HEIGHT//2 + 120, 
                                              self.mode_label, 0.5)
+        
+        arcade.draw_text("Waiting for other players...", SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 230, 
+                         arcade.color.BLACK, 12, font_name=self.font,align='center',width=300)
         
         for idx, player in enumerate(self.players):
             arcade.draw_text(player, SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2 + 80 - idx * 40, 
