@@ -2,7 +2,7 @@ import arcade
 from .state import State
 from .waiting_room_state import WaitingRoomState
 from ..buttons import HoverLineButton
-from ..alert_notification import InputPopup
+from ..alert_notification import InputPopup, OKNotification
 from config.config import *
 
 
@@ -31,18 +31,20 @@ class ChooseModeState(State):
 
         self.buttons.extend([traditional_button, blitz_button])
 
+        self.init_result_box()
+
 
         def on_ok():
             current_text = self.input_popup.get_current_text()
             if self.register_with_name(current_text):
                 self.input_popup.show_noti("Valid name", arcade.color.GREEN)
                 self.game.turn_off_notification('input name')
-                self.game.push_state(WaitingRoomState(self.game, self.mode))
+
+
+                self.game.show_popup('Registration notification')
+                
             else:
                 self.input_popup.show_noti("Invalid name", arcade.color.RED)
-
-        
-
 
         def on_cancel():
             self.game.turn_off_notification('input name')
@@ -52,7 +54,14 @@ class ChooseModeState(State):
 
         self.game.popups['input name'] = self.input_popup
 
-        
+    def init_result_box(self):
+        def on_ok():
+            self.game.push_state(WaitingRoomState(self.game, self.mode))
+            self.game.turn_off_notification('Registration notification')
+
+        self.ok_notification =  OKNotification("Registration Completed Successfully", on_ok = on_ok)
+
+        self.game.popups['Registration notification'] = self.ok_notification
         
     def set_mode(self, mode):
         self.game.show_popup('input name')

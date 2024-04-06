@@ -2,6 +2,7 @@ import arcade
 from .state import State
 from .game_play_state import GamePlayState
 from ..buttons import ImageButton, HoverLineButton
+from ..alert_notification import OKNotification
 from config.config import *
 
 
@@ -51,6 +52,8 @@ class WaitingRoomState(State):
     def on_update(self, delta_time):
         if(self.game.proxy.is_game_started()):
             self.game.push_state(GamePlayState(self.game, self.game.proxy.get_mode()))
+
+            
 
             
     def get_current_players(self):
