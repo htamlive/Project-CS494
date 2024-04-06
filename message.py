@@ -6,11 +6,15 @@ class MessageType(Enum):
     JOIN_DENY = 0x2
     JOIN_ACK = 0x3
     READY = 0x8
+    READY_CHANGE = 0x9
     START_GAME = 0x4
     QUESTION = 0x5
     TIMEOUT = 0x6
     ANSWER = 0x7
     RESULT = 0xa
+    TICK = 0xb
+    WINNER = 0xc
+    DISQUALIFIED = 0xd
 
 class Message:
     def __init__(self):
@@ -93,6 +97,22 @@ class ReadyMessage(Message):
     def unpack_data(cls, data):
         _, state = struct.unpack(cls.format, data)
         return cls(state)
+
+class ReadyChangeMessage(Message):
+    type = MessageType.READY_CHANGE
+    format = '<BI'
+
+    def __init__(self, nums_of_ready: int):
+        super().__init__()
+        self.nums_of_ready = nums_of_ready
+    
+    def pack(self):
+        return struct.pack(self.format, self.type.value, self.nums_of_ready)
+    
+    @classmethod
+    def unpack_data(cls, data):
+        _, nums_of_ready = struct.unpack(cls.format, data)
+        return cls(nums_of_ready)
     
 class StartGameMessage(Message):
     type = MessageType.START_GAME
@@ -112,9 +132,9 @@ class StartGameMessage(Message):
     
 class Operation(Enum):
     ADD = 0x1
-    SUB = 0x1
-    MUL = 0x2
-    DIV = 0x3
+    SUB = 0x2
+    MUL = 0x3
+    DIV = 0x4
 
 class QuestionMessage(Message):
     type = MessageType.QUESTION
@@ -148,41 +168,118 @@ class TimeOutMessage(Message):
     def unpack_data(cls, data):
         return cls()
 
+class TickMessage(Message):
+    type = MessageType.TICK
+    format = '<B'
+
+    def __init__(self):
+        super().__init__()
+
+    def pack(self):
+        return struct.pack(self.format, self.type.value)
+    
+    @classmethod
+    def unpack_data(cls, data):
+        return cls()
+    
+class AnswerMessage(Message):
+    type = MessageType.ANSWER
+    format = '<Bi'
+
+    def __init__(self, answer: int):
+        super().__init__()
+        self.answer = answer
+    
+    def pack(self):
+        return struct.pack(self.format, self.type.value, self.answer)
+    
+    @classmethod
+    def unpack_data(cls, data):
+        _, answer = struct.unpack(cls.format, data)
+        return cls(answer)
+
+class ResultMessage(Message):
+    type = MessageType.RESULT
+    format = '<Bi?i'
+
+    def __init__(self, answer: int, is_correct: bool, new_pos: int):
+        super().__init__()
+        self.answer = answer
+        self.is_correct = is_correct
+        self.new_pos = new_pos
+    
+    def pack(self):
+        return struct.pack(self.format, self.type.value, self.answer, self.is_correct, self.new_pos)
+    
+    @classmethod
+    def unpack_data(cls, data):
+        _, answer, is_correct, new_pos = struct.unpack(cls.format, data)
+        return cls(answer, is_correct, new_pos)
+
+class WinnerMessage(Message):
+    type = MessageType.WINNER
+    format = '<B6s'
+
+    def __init__(self, name: str):
+        super().__init__()
+        self.name = name
+    
+    def pack(self):
+        name_bytes = self.name.encode()
+        return struct.pack(self.format, self.type.value, name_bytes)
+    
+    @classmethod
+    def unpack_data(cls, data):
+        _, name = struct.unpack(cls.format, data)
+        name = name.decode().rstrip('\x00')
+        return cls(name)
+    
+class DisqualifiedMessage(Message):
+    type = MessageType.DISQUALIFIED
+    format = '<B'
+
+    def __init__(self):
+        super().__init__()
+    
+    def pack(self):
+        return struct.pack(self.format, self.type.value)
+
+    @classmethod
+    def unpack_data(cls, data):
+        return cls()
+
+
 if __name__ == "__main__":
     # Example usage:
     join_message = JoinMessage(1234, "Alice")
     join_message_bytes = join_message.pack()
     print("Join Message:", join_message_bytes)
-    print("Unpacked Join Message:", Message.unpack(join_message_bytes))
+    print("Unpacked Join Message:", Message.unpack(join_message_bytes).__dict__)
 
     join_deny_message = JoinDenyMessage()
     join_deny_message_bytes = join_deny_message.pack()
     print("Join Deny Message:", join_deny_message_bytes)
-    print("Unpacked Join Deny Message:", Message.unpack(join_deny_message_bytes))
+    print("Unpacked Join Deny Message:", Message.unpack(join_deny_message_bytes).__dict__)
 
     join_ack_message = JoinAckMessage()
     join_ack_message_bytes = join_ack_message.pack()
     print("Join Ack Message:", join_ack_message_bytes)
-    print("Unpacked Join Ack Message:", Message.unpack(join_ack_message_bytes))
+    print("Unpacked Join Ack Message:", Message.unpack(join_ack_message_bytes).__dict__)
 
     ready_message = ReadyMessage(True)
     ready_message_bytes = ready_message.pack()
     print("Ready Message:", ready_message_bytes)
-    print("Unpacked Ready Message:", Message.unpack(ready_message_bytes))
+    print("Unpacked Ready Message:", Message.unpack(ready_message_bytes).__dict__)
 
     start_game_message = StartGameMessage(100)
     start_game_message_bytes = start_game_message.pack()
     print("Start Game Message:", start_game_message_bytes)
-    print("Unpacked Start Game Message:", Message.unpack(start_game_message_bytes))
+    print("Unpacked Start Game Message:", Message.unpack(start_game_message_bytes).__dict__)
 
-    question_message = QuestionMessage(10, 20, Operation.ADD)
+    question_message = QuestionMessage(1, 22, Operation(int(1)))
     question_message_bytes = question_message.pack()
     print("Question Message:", question_message_bytes)
-    print("Unpacked Question Message:", Message.unpack(question_message_bytes))
-
-
-
-
+    print("Unpacked Question Message:", Message.unpack(question_message_bytes).__dict__)
 
 
 
