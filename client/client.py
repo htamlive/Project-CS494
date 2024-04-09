@@ -1,4 +1,3 @@
-from pyglet.libs.x11.xlib import False_
 from client.event import ServerMessage, UserAnswer
 from config.config import Operator
 from message import Message, Operation
