@@ -17,6 +17,7 @@ class MessageType(Enum):
     TICK = 0xB
     WINNER = 0xC
     DISQUALIFIED = 0xD
+    DISCONNECT = 0xE
 
 
 @dataclass
@@ -279,6 +280,20 @@ class WinnerMessage(Message):
 
 class DisqualifiedMessage(Message):
     type = MessageType.DISQUALIFIED
+    format = "<B"
+
+    def __init__(self):
+        super().__init__()
+
+    def pack(self):
+        return struct.pack(self.format, self.type.value)
+
+    @classmethod
+    def unpack_data(cls, data):
+        return cls()
+
+class DisconnectMessage(Message):
+    type = MessageType.DISCONNECT
     format = "<B"
 
     def __init__(self):

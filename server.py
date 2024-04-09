@@ -77,6 +77,10 @@ class State(ABC):
     def handle_tick(self, data_pack) -> None:
         pass
 
+    @abstractmethod
+    def handle_disconnect(self, data_pack) -> None:
+        pass
+
 class WaitingState(State):
     def handle_join(self, data_pack) -> None:
         message: JoinMessage = Message.unpack(data_pack[0])
@@ -130,6 +134,17 @@ class WaitingState(State):
 
     def handle_tick(self, data_pack) -> None:
         return
+
+    def handle_disconnect(self, data_pack) -> None:
+        client_address = data_pack[2]
+        if client_address in self.context.players:
+            del self.context.players[client_address]
+
+        # # Broadcast the player disconnected message to all players
+        # for address, player in self.context.players.items():
+        #     player.client_socket.send(PlayerDisconnectedMessage().pack())
+
+        print("Player disconnected.")
 
 
 class StartingState(State):
@@ -286,6 +301,20 @@ class StartingState(State):
                     # Start next round
                     self.context.current_game.remaining_time = -1
 
+    def handle_disconnect(self, data_pack) -> None:
+        client_address = data_pack[2]
+        if client_address in self.context.players:
+            del self.context.players[client_address]
+        
+        if client_address in self.context.current_game.players:
+            del self.context.current_game.players[client_address]
+
+        # # Broadcast the player disconnected message to all players
+        # for address, player in self.context.players.items():
+        #     player.client_socket.send(PlayerDisconnectedMessage().pack())
+
+        print("Player disconnected.")
+
         
 
 # Define the server class
@@ -306,7 +335,8 @@ class GameServer:
             MessageType.JOIN: self.request_join,
             MessageType.READY: self.request_ready,
             MessageType.TICK: self.request_tick,
-            MessageType.ANSWER: self.request_answer
+            MessageType.ANSWER: self.request_answer,
+            MessageType.DISCONNECT: self.request_disconnect,
         }
     
     def transition_to(self, state: State):
@@ -347,6 +377,9 @@ class GameServer:
             except Exception as e:
                 print("Error receiving message:", e)
                 break
+        
+        # Close the client socket
+        self.message_queue.put([DisconnectMessage().pack(), client_socket, client_address])
 
     def timer_loop(self):
         # Timer loop to send 'tick' message into the queue
@@ -384,6 +417,9 @@ class GameServer:
     
     def request_answer(self, data_pack):
         self._state.handle_answer(data_pack)
+    
+    def request_disconnect(self, data_pack):
+        self._state.handle_disconnect(data_pack)
 
 if __name__ == "__main__":
     server = GameServer(HOST, PORT)
