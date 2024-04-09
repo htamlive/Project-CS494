@@ -46,10 +46,11 @@ class JoinMessage(Message):
     type = MessageType.JOIN
     format = "<BI6s"
 
-    def __init__(self, room: int, name: str):
+    room: int
+    name: str
+
+    def __post_init__(self):
         super().__init__()
-        self.room = room
-        self.name = name
 
     def pack(self):
         name_bytes = self.name.encode()
@@ -94,13 +95,15 @@ class JoinAckMessage(Message):
         return cls()
 
 
+@dataclass
 class ReadyMessage(Message):
     type = MessageType.READY
     format = "<B?"
 
-    def __init__(self, state: bool):
+    state: bool
+
+    def __post_init__(self):
         super().__init__()
-        self.state = state
 
     def pack(self):
         return struct.pack(self.format, self.type.value, self.state)
@@ -291,6 +294,7 @@ class DisqualifiedMessage(Message):
     @classmethod
     def unpack_data(cls, data):
         return cls()
+
 
 class DisconnectMessage(Message):
     type = MessageType.DISCONNECT
