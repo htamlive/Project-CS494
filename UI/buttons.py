@@ -85,7 +85,7 @@ class HoverLineButton(ImageButton):
     def draw(self):
         super().draw()
 
-        if self.is_hover and self.is_enabled:
+        if self.hovered_line_timer > 0 and self.is_enabled:
             arcade.draw_line(
                 self.center_x - self.hovered_line_current_width / 2,
                 self.center_y - self.height / 2 - self.line_height / 2,
@@ -102,14 +102,13 @@ class HoverLineButton(ImageButton):
                 self.hovered_line_timer += delta_time
                 if self.hovered_line_timer > 0.05:
                     self.hovered_line_current_width += self.hovered_line_speed
-                    self.hovered_line_timer = 0
             else:
                 self.hovered_line_current_width = self.hovered_line_max_width
         else:
-            if self.hovered_line_current_width - self.hovered_line_speed  > 0:
-                self.hovered_line_timer += delta_time
-                if self.hovered_line_timer > 0.05:
+            if self.hovered_line_current_width - self.hovered_line_speed > 0:
+                self.hovered_line_timer -= delta_time
+                if self.hovered_line_timer >= 0:
                     self.hovered_line_current_width -= self.hovered_line_speed
-                    self.hovered_line_timer = 0
             else:
+                self.hovered_line_timer = 0
                 self.hovered_line_current_width = 0
