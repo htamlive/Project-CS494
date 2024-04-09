@@ -42,6 +42,12 @@ class Proxy:
         '''
         return self.dummy_test_time > 10
     
+    def on_ready(self):
+        '''
+        The player is ready to play the game
+        '''
+        pass
+    
     def get_mode(self):
         '''
         return the mode of the game

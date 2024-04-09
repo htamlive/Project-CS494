@@ -68,15 +68,17 @@ class GamePlayState(State):
             
         # self.players = self.get_current_players()
 
-        self.go_button = ImageButton("resources/images/btnGo.png")
+        self.go_button = ImageButton("resources/images/btnGo.png", 0.7)
+        self.go_button.click_scale_factor = 0.8
         self.go_button.center_x = SCREEN_WIDTH // 2
         self.go_button.center_y = SCREEN_HEIGHT // 2 - 235
 
         self.go_button.on_click = lambda : self.on_submit()
 
-        self.next_button = ImageButton("resources/images/btnNext.png")
+        self.next_button = ImageButton("resources/images/btnNext.png", 0.7)
+        self.next_button.click_scale_factor = 0.8
         self.next_button.center_x = SCREEN_WIDTH // 2
-        self.next_button.center_y = SCREEN_HEIGHT // 2 - 230
+        self.next_button.center_y = SCREEN_HEIGHT // 2 - 230 - 2
         self.next_button.set_enabled(False, False)
         
         self.next_button.on_click = lambda : self.on_next_quest()
@@ -212,7 +214,7 @@ class GamePlayState(State):
         arcade.draw_scaled_texture_rectangle(150, SCREEN_HEIGHT//2 + 200,
                                                 self.time_title, 0.5)
         
-        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT//2 - 110,
+        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT//2 - 110 + 3,
                                                 self.submission_box,0.9)
         
 
