@@ -2,7 +2,7 @@ import arcade
 from .state import State
 from .game_play_state import GamePlayState
 from ..buttons import ImageButton, HoverLineButton
-from ..alert_notification import OKNotification
+from ..alert_notification import OKNotification, AlertNotification
 from config.config import *
 
 
@@ -47,6 +47,8 @@ class WaitingRoomState(State):
         ready_button.center_x = SCREEN_WIDTH // 2
         ready_button.center_y = SCREEN_HEIGHT // 2 - 230
 
+        self.init_leave_waiting_room_popup()
+
         def on_ready():
             self.is_ready = True
             self.game.proxy.on_ready()
@@ -54,9 +56,7 @@ class WaitingRoomState(State):
 
 
         def on_leave():
-            self.game.proxy.leave_game()
-            self.game.return_menu()
-
+            self.game.show_popup('leave waiting room')
 
         ready_button.on_click = on_ready
         leave_button.on_click = on_leave
@@ -64,12 +64,25 @@ class WaitingRoomState(State):
 
         self.buttons.extend([ready_button,leave_button])
 
+        
+
+    def init_leave_waiting_room_popup(self):
+        def on_ok():
+            self.game.proxy.leave_game()
+            self.game.return_menu()
+            self.game.turn_off_notification('leave waiting room')
+        
+        def on_cancel():
+            self.game.turn_off_notification('leave waiting room')
+        
+        self.leave_waiting_room_popup = AlertNotification("Are you sure you want to leave?", on_ok, on_cancel)
+        self.game.popups['leave waiting room'] = self.leave_waiting_room_popup
+
     def on_update(self, delta_time):
         super().on_update(delta_time)
         if(self.game.proxy.is_game_started()):
             self.game.push_state(GamePlayState(self.game, self.game.proxy.get_mode()))
 
-            
 
             
     def get_current_players(self):

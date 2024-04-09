@@ -107,7 +107,7 @@ class MyGame(arcade.Window):
 
         self.proxy.on_update(delta_time)
 
-        for _, box in self.popups.items():
+        for _, box in self.popups.copy().items():
             box.on_update(delta_time)
 
         if(self.is_notification_on()):

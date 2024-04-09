@@ -4,6 +4,7 @@ from arcade.gui import UIInputText
 from .state import State
 from .summary_state import SummaryState
 from ..buttons import ImageButton, HoverLineButton
+from ..alert_notification import AlertNotification
 from config.config import *
 import random
 from enum import Enum
@@ -59,6 +60,8 @@ class GamePlayState(State):
         if(mode == Mode.BLITZ):
             self.mode_label = arcade.load_texture("resources/images/blitzModeLabel.png")
 
+        self.init_leave_game_popup()
+
         # traditional_button = HoverLineButton("resources/images/btnTraditional.png", 0.5)
         # traditional_button.click_scale_factor = 0.6
         # traditional_button.center_x = SCREEN_WIDTH // 2
@@ -89,12 +92,8 @@ class GamePlayState(State):
         leave_button.center_x = SCREEN_WIDTH // 2 + 150
         leave_button.center_y = SCREEN_HEIGHT // 2 + 160
 
-        def on_leave():
-            self.game.proxy.leave_game()
-            self.game.return_menu()
-
         
-        leave_button.on_click = on_leave
+        leave_button.on_click = lambda : self.game.show_popup('leave game room')
         
 
         self.next_button.set_enabled(False, False)
@@ -238,6 +237,18 @@ class GamePlayState(State):
         # for idx, player in enumerate(self.players):
         #     arcade.draw_text(player, SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2 + 80 - idx * 40, 
         #                      arcade.color.BLACK, 20, font_name=self.font)
+
+    def init_leave_game_popup(self):
+        def on_ok():
+            self.game.proxy.leave_game()
+            self.game.return_menu()
+            self.game.turn_off_notification('leave game room')
+        
+        def on_cancel():
+            self.game.turn_off_notification('leave game room')
+        
+        self.leave_waiting_room_popup = AlertNotification("Are you sure you want to leave?", on_ok, on_cancel)
+        self.game.popups['leave game room'] = self.leave_waiting_room_popup
 
 
     def on_update(self, delta_time):
