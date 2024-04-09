@@ -1,12 +1,13 @@
 from pyglet.libs.x11.xlib import False_
 from client.event import ServerMessage, UserAnswer
-from message import Message
+from config.config import Operator
+from message import Message, Operation
 from .event import UserEnterName, UserAnswer
 from proxy import Proxy
 import socket
 import threading
 from multiprocessing import SimpleQueue
-from .client_state import Unconnected, AnsweringQuestion
+from .client_state import Unconnected, AnsweringQuestion, WaitingForQuestion
 import logging
 
 logger = logging.getLogger(__name__)
@@ -39,20 +40,46 @@ class Client(Proxy):
     def put_response(self, response):
         self._response_queue.put(response)
 
+    def get_score(self):
+        return self._points
+
     def send_message(self, message: Message):
         self.client_socket.send(message.pack())
+
+    def init_time(self):
+        self.time_left = 15
 
     def wait_for_message(self):
         return self._message_queue.get()
 
     def gen_quest(self):
         while True:
+            self._state.handle()
             match self._state:
-                case AnsweringQuestion(operand1, operand2, operator):
-                    return operand1, operator, operand2
+                case AnsweringQuestion(_, operand1, operand2, operator):
+                    print(f"Question: {operand1} {operator} {operand2}")
+                    op = None
+                    match operator:
+                        case 0x1:
+                            op = Operator.ADD
+                        case 0x2:
+                            op = Operator.SUBTRACT
+                        case 0x3:
+                            op = Operator.MULTIPLY
+                        case 0x4:
+                            op = Operator.DIVIDE
+                        case _:
+                            raise ValueError("Invalid operator")
+                    return operand1, op, operand2, None
 
-    def check_valid_name(self, name):
-        print("Checking name")
+    def on_ready(self):
+        while not isinstance(self._state, WaitingForQuestion):
+            self._state.handle()
+
+    def is_game_started(self):
+        return isinstance(self._state, WaitingForQuestion)
+
+    def register(self, name, mode):
         self._message_queue.put(UserEnterName(name))
         self._state.handle()
         rs = self.wait_for_response()
@@ -73,9 +100,10 @@ class Client(Proxy):
 
     def _receive_message(self):
         data = self.client_socket.recv(4096)
-        logger.debug("Received data: %s", data)
-        logger.info("Received message: %s", Message.unpack(data))
-        return Message.unpack(data)
+        logger.info("Received data: %s", data)
+        msg = Message.unpack(data)
+        logger.info("Received message: %s", msg)
+        return msg
 
     def on_update(self, delta_time):
         pass

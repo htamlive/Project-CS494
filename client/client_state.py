@@ -22,11 +22,11 @@ class Unconnected(ClientState):
         logger.info("Transitioning to Unconnected state")
 
     def handle(self):
+        # wait for user to enter name
         message = self.context.wait_for_message()
-        print("Received message: ", message)
+        logger.debug("Received message: %s", message)
         match message:
             case UserEnterName(name):
-                print("Sending join message")
                 self.context.send_message(JoinMessage(0, name))
                 self.context.set_state(WaitingForGameStart(self.context))
             case _:
@@ -54,8 +54,8 @@ class WaitingForGameStart(ClientState):
         logger.info("Transitioning to WaitingForGameStart state")
 
     def handle(self):
-        inp = input("Press enter to start the game: ")
         self.context.send_message(ReadyMessage(True))
+        logger.info("Sent ready message")
         self.context.set_state(WaitForOtherPlayers(self.context))
 
 
@@ -67,16 +67,21 @@ class WaitForOtherPlayers(ClientState):
         logger.info("Transitioning to WaitForOtherPlayers state")
 
     def handle(self):
-        message = self.context.wait_for_message()
-        logger.info("Received message: %s", message)
-        match message:
-            case ServerMessage(StartGameMessage()):
-                self.context.set_state(WaitingForQuestion(self.context))
-            case ServerMessage(ReadyChangeMessage()):
-                self.context.set_state(WaitForOtherPlayers(self.context))
-            case _:
-                logger.error("WaitForOtherPlayers: invalid event " + str(message))
-                self.context.set_state(WaitForOtherPlayers(self.context))
+        while True:
+            logger.info("Waiting for other players")
+            message = self.context.wait_for_message()
+            logger.info("Received message: %s", message)
+            match message:
+                case ServerMessage(ReadyChangeMessage(n_ready)):
+                    pass
+                case ServerMessage(StartGameMessage(race_length)):
+                    self.context.set_state(WaitingForQuestion(self.context))
+                    break
+                case _:
+                    logger.error("WaitForOtherPlayers: invalid event " + str(message))
+                    raise ValueError(
+                        "WaitForOtherPlayers: invalid event " + str(message)
+                    )
 
 
 @dataclass
@@ -116,9 +121,7 @@ class AnsweringQuestion(ClientState):
         message = self.context.wait_for_message()
         match message:
             case UserAnswer(answer):
-                self.context.send_message(
-                    AnswerMessage(self.operand1, self.operand2, self.operation, answer)
-                )
+                self.context.send_message(AnswerMessage(answer))
                 logger.info("Sent answer")
                 self.context.set_state(WaitingForResult(self.context))
             case _:
