@@ -2,6 +2,13 @@ import random
 from config.config import *
 
 class Proxy:
+    '''
+        + register
+        + ready (checked)
+        + game started
+        + send answer
+        + request new question
+    '''
     def __init__(self):
         # connect to the server
 
@@ -14,6 +21,8 @@ class Proxy:
         self.time_left = DEFAULT_TIME
         self.dummy_test_time = 0
         self.current_mode = None
+
+        self.score = 0
 
         self.result = None
 
@@ -83,31 +92,33 @@ class Proxy:
 
         return operand1, operator, operand2, result
     
-    def check_answer(self, answer, stored_server_answer):
+    def submit_answer(self, answer, stored_server_answer):
         '''
         you may retrieve the answer from the server instead of the stored_server_answer
 
 
         New version: just update the local result of proxy, does not need to return anything
         '''
-        result = Result.INCORRECT
-        try:
-            user_input = int(answer)
-            if user_input == stored_server_answer:
-                result = Result.CORRECT
-            else:
-                result = Result.INCORRECT
-        except:
-            result = Result.INCORRECT
+        # result = Result.INCORRECT
+        # try:
+        #     user_input = int(answer)
+        #     if user_input == stored_server_answer:
+        #         result = Result.CORRECT
+        #     else:
+        #         result = Result.INCORRECT
+        # except:
+        #     result = Result.INCORRECT
 
-        self.result = result
+        # self.result = result
+
+        pass
 
     
-    def get_score(self):
-        '''
-        return the score of the quest if the user answers correctly. Otherwise, return 0
-        '''
-        return 1
+    '''
+    TODO
+    '''
+    def get_racing_length(self):
+        return 100
 
     def get_user_top(self):
         return 1
@@ -157,13 +168,45 @@ class Proxy:
     def get_number_of_ready_players(self):
         return 3
     
-    def request_update_score(self):
+    def get_number_of_players_in_game(self):
+        return 3
+    
+    def get_winner(self):
         '''
-        This function will ask for every frame if the server allows the UI to update the score
+        Use for lost players
+
+        + None
+        + Player 1
+
+        '''
+        return 'Player 1'
+    
+    def check_result(self):
+        '''
+        This function will ask for every frame if the server is timeout
+
+        This function will update score
+
         return the result, which is the enum of Result if the server approves the UI to update and show the result and the score
         Otherwise, return None
+
+        Return None, None
+
+        correct
+        incorrect
+
+        Leaderboard
+        Your score: 1/100
+
+        Player 1
+
+        self.score = ...
+        self.winner = ...
+
         '''
         result = self.result
         self.result = None
         return result
+    
+
         

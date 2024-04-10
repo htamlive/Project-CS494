@@ -19,3 +19,7 @@ class Operator(Enum):
 class Result(Enum):
     CORRECT = 'Correct'
     INCORRECT = 'Incorrect'
+    DISQUALIFIED = 'Disqualified'
+
+class SOCKET_RETURN(Enum):
+    IS_WAITING = 'is_waiting'
