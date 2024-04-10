@@ -35,16 +35,25 @@ class ChooseModeState(State):
 
 
         def on_ok():
-            current_text = self.input_popup.get_current_text()
-            if self.register_with_name(current_text):
-                self.input_popup.show_noti("Valid name", arcade.color.GREEN)
-                self.game.turn_off_notification('input name')
+            def query_func():
+                current_text = self.input_popup.get_current_text()
+                ret = self.register_with_name(current_text)
+
+                if ret != SOCKET_RETURN.IS_WAITING:
+                    if ret:
+                        self.input_popup.show_noti("Valid name", arcade.color.GREEN)
+                        self.game.turn_off_notification('input name')
 
 
-                self.game.show_popup('Registration notification')
-                
-            else:
-                self.input_popup.show_noti("Invalid name", arcade.color.RED)
+                        self.game.show_popup('Registration notification')
+                        
+                    else:
+                        self.input_popup.show_noti("Invalid name", arcade.color.RED)
+                    return True
+                return False
+            
+            self.game.waiting_notification.add_query(query_func)
+
 
         def on_cancel():
             self.game.turn_off_notification('input name')
@@ -71,6 +80,8 @@ class ChooseModeState(State):
     def register_with_name(self, name):
         return self.game.proxy.register(name, self.mode)
     
+
+    
     def renew_input_box(self):
         self.ui_manager.remove(self.input_box)
         self.input_box = self.init_input_box()
@@ -90,3 +101,6 @@ class ChooseModeState(State):
         arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT//2 + 160, 
                                              self.mode_title, 0.35)
         super().draw()
+
+    def on_update(self, delta_time):
+        super().on_update(delta_time)

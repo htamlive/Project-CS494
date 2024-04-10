@@ -37,6 +37,8 @@ class GamePlayState(State):
         self.current_score = 0
         self.timeleft = self.init_time()
 
+        self.request_racing_length()
+
         self.operators = {
             Operator.ADD: arcade.load_texture("resources/images/operators/addOperator.png"),
             Operator.SUBTRACT: arcade.load_texture("resources/images/operators/subtractOperator.png"),
@@ -112,6 +114,19 @@ class GamePlayState(State):
             text=''
         )
     
+    def request_racing_length(self):
+
+        self.racing_length = None
+
+        def query_func():
+            ret = self.game.proxy.request_racing_length()
+            if ret != SOCKET_RETURN.IS_WAITING:
+                self.racing_length = ret
+                return True
+            return False
+        
+        self.game.waiting_notification.add_query(query_func)
+    
     def renew_input_box(self):
         self.ui_manager.remove(self.input_box)
         self.input_box = self.init_input_box()
@@ -128,35 +143,41 @@ class GamePlayState(State):
             
             self.game.push_state(SummaryState(self.game, self.mode, self.current_score))
 
-
     def gen_quest(self):
         return self.game.proxy.gen_quest()
-
-    
 
     def on_submit(self):
         user_input = self.input_box.text
         operand1, operator, operand2, result = self.history[-1]
 
-        self.game.proxy.check_answer(user_input, result)
-
-        self.update_score()
+        self.game.proxy.submit_answer(user_input, result)
 
 
         self.go_button.set_enabled(False, False)
+
+
+        def query_func():
         
-    
-    def request_update_score(self):
-        result = self.game.proxy.request_update_score()
+            result = self.game.proxy.check_result()
 
-        ret = result is not None
+            if(result != SOCKET_RETURN.IS_WAITING):
 
-        if(ret):
-            self.result = result
-            self.update_score()
-            self.next_button.set_enabled(True, True)
+                ret = result is not None
 
-        return ret
+                if(ret == Result.DISQUALIFIED):
+                    pass
+
+                if(ret):
+                    self.result = result
+                    self.update_score()
+                    self.next_button.set_enabled(True, True)
+
+                return True
+
+            return False
+        
+        self.game.waiting_notification.add_query(query_func)
+
     
 
     def update_score(self):
@@ -165,13 +186,21 @@ class GamePlayState(State):
 
     def on_next_quest(self):
         if(self.next_button.is_enabled and self.next_button.visible):
-            # print('Next')
-            self.history.append(self.gen_quest())
-            self.result = None
-            self.next_button.set_enabled(False, False)
-            self.renew_input_box()
-            self.go_button.set_enabled(True, True)
-            self.next_button.set_enabled(False, False)
+            def query_func():
+                ret = self.gen_quest()
+                if ret != SOCKET_RETURN.IS_WAITING:
+                    self.history.append(ret)
+                    self.result = None
+                    self.next_button.set_enabled(False, False)
+                    self.renew_input_box()
+                    self.go_button.set_enabled(True, True)
+                    self.next_button.set_enabled(False, False)
+                    return True
+                
+                return False
+
+            self.game.waiting_notification.add_query(query_func)
+            
 
             
     def get_current_players_with_scores(self):
@@ -206,7 +235,7 @@ class GamePlayState(State):
         players = self.get_current_players_with_scores()
         for idx, (player_name, score) in enumerate(players):
             arcade.draw_text(player_name, SCREEN_WIDTH - 230, SCREEN_HEIGHT - 300 - idx * 40, arcade.color.BLACK, 20, font_name=self.font, align="right", width=100)
-            arcade.draw_text(str(score), SCREEN_WIDTH - 70, SCREEN_HEIGHT - 300 - idx * 40, arcade.color.BLACK, 20, font_name=self.font)
+            arcade.draw_text(f'{str(score)}/{self.racing_length}', SCREEN_WIDTH - 70, SCREEN_HEIGHT - 300 - idx * 40, arcade.color.BLACK, 20, font_name=self.font)
 
     def draw(self):
         super().draw()
@@ -240,7 +269,7 @@ class GamePlayState(State):
             arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 80, 
                                                  self.results[self.result], 0.7)
         
-        arcade.draw_text(str(self.current_score), SCREEN_WIDTH - 180, SCREEN_HEIGHT//2 + 130, 
+        arcade.draw_text(f'{str(self.current_score)}/{self.racing_length}', SCREEN_WIDTH - 180, SCREEN_HEIGHT//2 + 130, 
                              arcade.color.BLACK, 40, font_name=self.font, align="center", width=100)
         
         arcade.draw_text(self.format_time(self.timeleft), 95, SCREEN_HEIGHT//2 + 130, 
@@ -269,7 +298,6 @@ class GamePlayState(State):
         self.timeleft = self.game.proxy.get_time_left()
         self.ui_manager.on_update(delta_time)
 
-        self.request_update_score()
 
     def on_key_release(self, symbol: int, modifiers: int):
         self.ui_manager.on_key_release(symbol, modifiers)

@@ -1,7 +1,7 @@
 import arcade
 from UI.states.menu_state import MenuState
 from config.config import *
-from UI.alert_notification import AlertNotification
+from UI.alert_notification import WaitingNotification
 from proxy import Proxy
 
 class MyGame(arcade.Window):
@@ -28,6 +28,8 @@ class MyGame(arcade.Window):
         self.push_state(self.menu_state)
 
         self.proxy = Proxy()
+
+        self.waiting_notification = WaitingNotification("Some magic is happening...")
 
     def push_state(self, new_state):
         if(len(self.state_stack) > 0):
@@ -85,6 +87,9 @@ class MyGame(arcade.Window):
         self.popups.pop(name)
 
     def is_notification_on(self):
+        if(self.waiting_notification.enabled):
+            return True
+        
         for _, box in self.popups.items():
             if box.enabled:
                 return True
@@ -106,6 +111,8 @@ class MyGame(arcade.Window):
     def on_update(self, delta_time: float):
 
         self.proxy.on_update(delta_time)
+
+        self.waiting_notification.on_update(delta_time)
 
         for box in self.popups.copy().values():
             box.on_update(delta_time)

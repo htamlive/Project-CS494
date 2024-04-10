@@ -3,11 +3,11 @@ from config.config import *
 
 class Proxy:
     '''
-        + register
+        + register (checked)
         + ready (checked)
-        + game started
-        + send answer
-        + request new question
+        + game started (checked)
+        + send answer (checked)
+        + request new question (checked)
     '''
     def __init__(self):
         # connect to the server
@@ -99,25 +99,23 @@ class Proxy:
 
         New version: just update the local result of proxy, does not need to return anything
         '''
-        # result = Result.INCORRECT
-        # try:
-        #     user_input = int(answer)
-        #     if user_input == stored_server_answer:
-        #         result = Result.CORRECT
-        #     else:
-        #         result = Result.INCORRECT
-        # except:
-        #     result = Result.INCORRECT
+        result = Result.INCORRECT
+        try:
+            user_input = int(answer)
+            if user_input == stored_server_answer:
+                result = Result.CORRECT
+            else:
+                result = Result.INCORRECT
+        except:
+            result = Result.INCORRECT
 
-        # self.result = result
-
-        pass
+        self.result = result
 
     
     '''
     TODO
     '''
-    def get_racing_length(self):
+    def request_racing_length(self):
         return 100
 
     def get_user_top(self):

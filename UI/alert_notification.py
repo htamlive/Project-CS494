@@ -192,3 +192,40 @@ class InputPopup(NotificationBase):
                          align="center", width=300)
             
         arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 5, self.submission_box)
+
+
+class WaitingNotification(NotificationBase):
+    def __init__(self, message):
+        super().__init__()
+        self.message = message
+
+        self.alert_box = arcade.load_texture("resources/images/rectangleBorder.png")
+
+        self.query_func = []
+
+    def add_query(self, query_func):
+        self.query_func.append(query_func)
+
+    def on_update(self, delta_time):
+        super().on_update(delta_time)
+        self.set_enabled(len(self.query_func) != 0)
+
+        for idx, query in enumerate(self.query_func.copy()):
+            if query():
+                self.query_func[idx] = None
+
+        self.query_func = [query for query in self.query_func if query]
+
+
+    def draw(self):
+        if not self.enabled:
+            return
+        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, self.alert_box, 1.5)
+
+        self.buttons.draw()
+
+        for button in self.buttons:
+            button.draw_effect()
+
+        arcade.draw_text(self.message, SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 50, arcade.color.BLACK, 20,
+                         align="center", width=300)
