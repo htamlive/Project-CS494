@@ -2,7 +2,7 @@ from __future__ import annotations
 from message import *
 
 from ..game import Game
-from ..message_data import MessageData
+from ..message_data import MessageData, TickMessage
 from ..config import *
 
 from .server_state import State

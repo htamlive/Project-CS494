@@ -157,7 +157,6 @@ class StartGameMessage(Message):
         return cls(race_lenght)
 
 
-@dataclass
 class Operation(Enum):
     ADD = 0x1
     SUB = 0x2
@@ -422,5 +421,5 @@ associated_classes = {
     MessageType.WINNER: WinnerMessage,
     MessageType.DISQUALIFIED: DisqualifiedMessage,
     MessageType.DISCONNECT: DisconnectMessage,
-    MessageType.PLAYERS_CHANGED: M,
+    MessageType.PLAYERS_CHANGED: PlayersChangedMessage,
 }
