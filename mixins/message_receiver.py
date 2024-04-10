@@ -12,10 +12,8 @@ class MessageReceiver:
             data = self.current_buffer
         else:
             data = self.current_buffer
-        print("Initial data: ", data)
         message_type = MessageType(data[0])
         length = associated_classes[message_type].length()
-        print("Expected length: ", length)
         while len(self.current_buffer) < length:
             self.current_buffer += data
             data = self.socket.recv(4096)
