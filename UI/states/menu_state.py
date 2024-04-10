@@ -9,8 +9,6 @@ from ..alert_notification import AlertNotification, OKNotification
 class MenuState(State):
     def __init__(self, game):
         super().__init__(game)
-        # self.buttons = arcade.SpriteList()
-        self.buttons = []
 
         # Play button
         play_button = HoverLineButton("resources/images/btnPlay.png", 1.0)

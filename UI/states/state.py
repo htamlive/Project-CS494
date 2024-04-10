@@ -1,9 +1,10 @@
 from arcade.gui import UIManager
+import arcade
 
 class State:
     def __init__(self, game):
         self.game = game
-        self.buttons = []
+        self.buttons = arcade.sprite_list.SpriteList()
 
         self.ui_manager = UIManager()
 
@@ -35,10 +36,13 @@ class State:
         pass
 
     def on_draw(self):
+    
         for button in self.buttons:
             button.on_draw()
 
 
     def draw(self):
+        self.buttons.draw()
+
         for button in self.buttons:
-            button.draw()
+            button.draw_effect()

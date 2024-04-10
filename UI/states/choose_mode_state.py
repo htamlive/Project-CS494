@@ -87,6 +87,6 @@ class ChooseModeState(State):
 
 
     def draw(self):
-        super().draw()
         arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT//2 + 160, 
                                              self.mode_title, 0.35)
+        super().draw()

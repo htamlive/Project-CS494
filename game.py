@@ -74,7 +74,7 @@ class MyGame(arcade.Window):
         if(self.current_state):
             self.current_state.draw()
 
-        for _, box in self.popups.items():
+        for box in self.popups.copy().values():
             box.draw()
 
     def turn_off_notification(self, name):
@@ -90,14 +90,14 @@ class MyGame(arcade.Window):
                 return True
 
     def on_mouse_motion(self, x, y, dx, dy):
-        for _, box in self.popups.items():
+        for _, box in self.popups.copy().items():
             box.on_mouse_motion(x, y, dx, dy)
 
         if(not self.is_notification_on()):
             self.current_state.on_mouse_motion(x, y, dx, dy)
 
     def on_mouse_press(self, x, y, button, modifiers):
-        for _, box in self.popups.items():
+        for box in self.popups.copy().values():
             box.on_mouse_press(x, y, button, modifiers)
 
         if(not self.is_notification_on()):
@@ -107,7 +107,7 @@ class MyGame(arcade.Window):
 
         self.proxy.on_update(delta_time)
 
-        for _, box in self.popups.copy().items():
+        for box in self.popups.copy().values():
             box.on_update(delta_time)
 
         if(self.is_notification_on()):

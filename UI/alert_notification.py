@@ -6,7 +6,7 @@ from config.config import *
 class NotificationBase:
     def __init__(self):
         self.enabled = False
-        self.buttons = []
+        self.buttons = arcade.sprite_list.SpriteList()
 
     def set_enabled(self, enabled):
         self.enabled = enabled
@@ -29,6 +29,8 @@ class NotificationBase:
         pass
 
 
+
+
 class AlertNotification(NotificationBase):
     def __init__(self, message, on_ok=lambda: None, on_cancel=lambda: None):
         super().__init__()
@@ -40,23 +42,30 @@ class AlertNotification(NotificationBase):
         self.ok_button = HoverLineButton("resources/images/btnOK.png")
         self.ok_button.center_x = SCREEN_WIDTH // 2 - 80
         self.ok_button.center_y = SCREEN_HEIGHT // 2 - 50
+        self.ok_button.hovered_line_speed = 10
 
         self.cancel_button = HoverLineButton("resources/images/btnCancel.png")
         self.cancel_button.center_x = SCREEN_WIDTH // 2 + 80
         self.cancel_button.center_y = SCREEN_HEIGHT // 2 - 50
+        self.cancel_button.hovered_line_speed = 10
 
         self.ok_button.on_click = self.on_ok
         self.cancel_button.on_click = self.on_cancel
 
-        self.buttons = [self.ok_button, self.cancel_button]
+
+
+        self.buttons.append(self.ok_button)
+        self.buttons.append(self.cancel_button)
 
     def draw(self):
         if not self.enabled:
             return
         arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, self.alert_box, 1.5)
 
+        self.buttons.draw()
+
         for button in self.buttons:
-            button.draw()
+            button.draw_additional_elements()
 
         arcade.draw_text(self.message, SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 50, arcade.color.BLACK, 20,
                          align="center", width=300)
@@ -74,15 +83,18 @@ class OKNotification(NotificationBase):
 
         self.ok_button.on_click = self.on_ok
 
-        self.buttons = [self.ok_button]
+        self.ok_button.hovered_line_speed = 10
+        self.buttons.extend([self.ok_button])
 
     def draw(self):
         if not self.enabled:
             return
         arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, self.alert_box, 1.5)
 
+        self.buttons.draw()
+
         for button in self.buttons:
-            button.draw()
+            button.draw_effect()
 
         arcade.draw_text(self.message, SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 50, arcade.color.BLACK, 20,
                          align="center", width=300)
@@ -104,10 +116,12 @@ class InputPopup(NotificationBase):
         self.ok_button = HoverLineButton("resources/images/btnOK.png")
         self.ok_button.center_x = SCREEN_WIDTH // 2 - 80
         self.ok_button.center_y = SCREEN_HEIGHT // 2 - 80
+        self.ok_button.hovered_line_speed = 10
 
         self.cancel_button = HoverLineButton("resources/images/btnCancel.png")
         self.cancel_button.center_x = SCREEN_WIDTH // 2 + 80
         self.cancel_button.center_y = SCREEN_HEIGHT // 2 - 80
+        self.cancel_button.hovered_line_speed = 10
 
         self.font = arcade.load_font("resources/fonts/UTM ANDROGYNE.TTF")
 
@@ -115,7 +129,8 @@ class InputPopup(NotificationBase):
         self.ok_button.on_click = self.on_ok
         self.cancel_button.on_click = self.on_cancel
 
-        self.buttons = [self.ok_button, self.cancel_button]
+        self.buttons.append(self.ok_button)
+        self.buttons.append(self.cancel_button)
 
         self.ui_manager = UIManager()
         self.ui_manager.enable()
@@ -162,8 +177,11 @@ class InputPopup(NotificationBase):
             return
         arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, self.alert_box, 1.5)
 
+        self.buttons.draw()
+
         for button in self.buttons:
-            button.draw()
+            button.draw_effect()
+
 
         self.ui_manager.draw()
         arcade.draw_text(self.message, SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 50, arcade.color.BLACK, 20,

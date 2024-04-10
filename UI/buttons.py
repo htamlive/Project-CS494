@@ -4,6 +4,8 @@ class ImageButton(arcade.Sprite):
     def __init__(self, image, scale=1):
         super().__init__(image, scale)
 
+        self.origin_scale = scale
+
         self.is_hover = False
         self.on_click = lambda: None
 
@@ -16,14 +18,18 @@ class ImageButton(arcade.Sprite):
 
         self.is_enabled = True
 
-    def on_mouse_motion(self, x, y, dx, dy):
+        self.verbose = False
 
+    def on_mouse_motion(self, x, y, dx, dy):
         self.prev_mouse_position = [x, y]
 
         if self.left <= x <= self.right and self.bottom <= y <= self.top and self.is_enabled:
             self.is_hover = True
         else:
             self.is_hover = False
+
+        # if(self.verbose):
+        #     print(self.is_hover, self.is_enabled)
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.is_hover and self.is_enabled:
@@ -54,18 +60,17 @@ class ImageButton(arcade.Sprite):
             self.is_clicked = False
         else:
             self.check_hover()
+
+    def draw_effect(self):
+        pass
         
 
 
     def draw(self, *, filter=None, pixelated=None, blend_function=None):
         
-        if self.is_enabled:
+        pass
             
-            arcade.draw_scaled_texture_rectangle(
-                self.center_x, self.center_y,
-                self.texture, self.click_scale_factor, 0
-            )
-            # super().draw(filter=filter, pixelated=pixelated, blend_function=blend_function)
+            
             
 
 
@@ -78,22 +83,25 @@ class HoverLineButton(ImageButton):
 
         self.hovered_line_width = 10
         self.hovered_line_max_width = self.width
-        self.hovered_line_speed = 40
+        self.hovered_line_speed = 20
         self.hovered_line_current_width = 0
         self.hovered_line_timer = 0
 
-    def draw(self):
-        super().draw()
-
+    def draw_effect(self):
         if self.hovered_line_timer > 0 and self.is_enabled:
             arcade.draw_line(
-                self.center_x - self.hovered_line_current_width / 2,
-                self.center_y - self.height / 2 - self.line_height / 2,
-                self.center_x + self.hovered_line_current_width / 2,
-                self.center_y - self.height / 2 - self.line_height / 2,
+                self.center_x - self.hovered_line_current_width // 2,
+                self.center_y - self.height // 2 - self.line_height // 2,
+                self.center_x + self.hovered_line_current_width // 2,
+                self.center_y - self.height // 2 - self.line_height // 2,
                 self.line_color,
                 self.line_height
             )
+
+    def draw(self, draw_with_effect = True, verbose = False):
+        super().draw(draw_with_effect = False, verbose = verbose)
+        
+
 
     def on_update(self, delta_time):
         super().on_update(delta_time)
