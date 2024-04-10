@@ -138,14 +138,26 @@ class GamePlayState(State):
         user_input = self.input_box.text
         operand1, operator, operand2, result = self.history[-1]
 
-        self.result = self.game.proxy.check_answer(user_input, result)
+        self.game.proxy.check_answer(user_input, result)
 
         self.update_score()
 
 
         self.go_button.set_enabled(False, False)
-        self.next_button.set_enabled(True, True)
         
+    
+    def request_update_score(self):
+        result = self.game.proxy.request_update_score()
+
+        ret = result is not None
+
+        if(ret):
+            self.result = result
+            self.update_score()
+            self.next_button.set_enabled(True, True)
+
+        return ret
+    
 
     def update_score(self):
         if self.result == Result.CORRECT:
@@ -256,6 +268,8 @@ class GamePlayState(State):
         self.update_time(delta_time)
         self.timeleft = self.game.proxy.get_time_left()
         self.ui_manager.on_update(delta_time)
+
+        self.request_update_score()
 
     def on_key_release(self, symbol: int, modifiers: int):
         self.ui_manager.on_key_release(symbol, modifiers)

@@ -15,6 +15,8 @@ class Proxy:
         self.dummy_test_time = 0
         self.current_mode = None
 
+        self.result = None
+
     def on_update(self, delta_time):
         '''
         This function is called every frame
@@ -84,6 +86,9 @@ class Proxy:
     def check_answer(self, answer, stored_server_answer):
         '''
         you may retrieve the answer from the server instead of the stored_server_answer
+
+
+        New version: just update the local result of proxy, does not need to return anything
         '''
         result = Result.INCORRECT
         try:
@@ -95,7 +100,8 @@ class Proxy:
         except:
             result = Result.INCORRECT
 
-        return result
+        self.result = result
+
     
     def get_score(self):
         '''
@@ -150,3 +156,14 @@ class Proxy:
     
     def get_number_of_ready_players(self):
         return 3
+    
+    def request_update_score(self):
+        '''
+        This function will ask for every frame if the server allows the UI to update the score
+        return the result, which is the enum of Result if the server approves the UI to update and show the result and the score
+        Otherwise, return None
+        '''
+        result = self.result
+        self.result = None
+        return result
+        
