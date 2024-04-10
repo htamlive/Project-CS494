@@ -83,6 +83,9 @@ class Client(Proxy, mixins.MessageReceiver):
     def get_score(self):
         return self._position
 
+    def set_state(self, state):
+        self._state = state
+
     def send_message(self, message: Message):
         self.client_socket.send(message.pack())
 
@@ -129,9 +132,6 @@ class Client(Proxy, mixins.MessageReceiver):
                 return False
             case _:
                 raise Exception("Unexpected message type")
-
-    def set_state(self, state):
-        self._state = state
 
     def check_answer(self, answer, _):
         self.send_message(AnswerMessage(int(answer)))
@@ -181,8 +181,11 @@ class Client(Proxy, mixins.MessageReceiver):
         self.time_left = 15
         return self.time_left
 
+    def get_time_left(self):
+        return self.time_left
+
     def get_number_of_players(self):
-        return self._number_of_ready_players
+        return self._number_of_players
 
     def get_number_of_ready_players(self):
-        return self._number_of_players
+        return self._number_of_ready_players
