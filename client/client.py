@@ -1,6 +1,8 @@
+import struct
 from client.event import ServerMessage, UserAnswer
 from config.config import Operator
 from message import Message, Operation
+from mixins.message_receiver import MessageReceiver
 from .event import UserEnterName, UserAnswer
 from proxy import Proxy
 import socket
@@ -8,13 +10,14 @@ import threading
 from multiprocessing import SimpleQueue
 from .client_state import Unconnected, AnsweringQuestion, WaitingForQuestion
 import logging
+import mixins
 
 logger = logging.getLogger(__name__)
 
 
-class Client(Proxy):
+class Client(Proxy, mixins.MessageReceiver):
     def __init__(self, host, port):
-        super().__init__()
+        Proxy.__init__(self)
         self._message_queue = SimpleQueue()
         self._response_queue = SimpleQueue()
         self._state = Unconnected(self)
@@ -24,6 +27,7 @@ class Client(Proxy):
         self.host = host
         self.port = port
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        MessageReceiver.__init__(self, self.client_socket)
         self._connect()
         logger.info("Client initialized")
 
@@ -31,6 +35,7 @@ class Client(Proxy):
         self._points = points
 
     def update_position(self, position):
+        logger.info("Updating position to %d", position)
         self._position = position
 
     def wait_for_response(self):
@@ -98,7 +103,7 @@ class Client(Proxy):
         self._message_queue.put(UserAnswer(int(answer)))
 
     def _receive_message(self):
-        data = self.client_socket.recv(4096)
+        data = self.receive_message()
         logger.info("Received data: %s", data)
         msg = Message.unpack(data)
         logger.info("Received message: %s", msg)
@@ -109,13 +114,13 @@ class Client(Proxy):
 
     def _receive_loop(self):
         while True:
-            try:
+            # try:
                 response = self._receive_message()
                 self._message_queue.put(ServerMessage(response))
                 # if response.type in self.message_handlers:
                 #     self.message_handlers[response.type](response)
                 # else:
                 #     print("Unhandled message type:", response.type)
-            except Exception as e:
-                print("Error receiving message:", e)
-                break
+            # except Exception as e:
+            #     print("Error receiving message:", e)
+            #     break
