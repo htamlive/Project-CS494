@@ -78,8 +78,8 @@ class WaitingState(State):
         if client_address in self.context.players:
             del self.context.players[client_address]
 
-        # # Broadcast the player disconnected message to all players
-        # for address, player in self.context.players.items():
-        #     player.client_socket.send(PlayerDisconnectedMessage().pack())
+        # Broadcast the player disconnected message to all players
+        for address, player in self.context.players.items():
+            player.client_socket.send(PlayerDisconnectedMessage().pack())
 
         print("Player disconnected.")

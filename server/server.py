@@ -82,7 +82,7 @@ class GameServer:
     def timer_loop(self):
         # Timer loop to send 'tick' message into the queue
         while True:
-            self.message_queue.put(MessageData(TickMessage(), None, None))
+            self.message_queue.put(TickMessage())
             time.sleep(1)
 
     def process_messages(self):

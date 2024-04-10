@@ -8,3 +8,8 @@ class MessageData:
     data: Message
     client_socket: socket | None
     client_address: tuple | None
+
+
+@dataclass
+class TickMessage:
+    pass

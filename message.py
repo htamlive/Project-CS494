@@ -8,18 +8,17 @@ class MessageType(Enum):
     JOIN = 0x1
     JOIN_DENY = 0x2
     JOIN_ACK = 0x3
-    READY = 0x8
-    READY_CHANGE = 0x9
     START_GAME = 0x4
     QUESTION = 0x5
     TIMEOUT = 0x6
     ANSWER = 0x7
+    READY = 0x8
+    READY_CHANGE = 0x9
     RESULT = 0xA
-    TICK = 0xB
     WINNER = 0xC
     DISQUALIFIED = 0xD
     DISCONNECT = 0xE
-
+    PLAYERS_CHANGED = 0xF
 
 
 @dataclass
@@ -210,22 +209,6 @@ class TimeOutMessage(Message):
 
 
 @dataclass
-class TickMessage(Message):
-    type = MessageType.TICK
-    format = "<B"
-
-    def __post_init__(self):
-        super().__init__()
-
-    def pack(self):
-        return struct.pack(self.format, self.type.value)
-
-    @classmethod
-    def unpack_data(cls, data):
-        return cls()
-
-
-@dataclass
 class AnswerMessage(Message):
     type = MessageType.ANSWER
     format = "<Bi"
@@ -300,12 +283,10 @@ class DisqualifiedMessage(Message):
         return cls()
 
 
+@dataclass
 class DisconnectMessage(Message):
     type = MessageType.DISCONNECT
     format = "<B"
-
-    def __init__(self):
-        super().__init__()
 
     def pack(self):
         return struct.pack(self.format, self.type.value)
@@ -313,6 +294,22 @@ class DisconnectMessage(Message):
     @classmethod
     def unpack_data(cls, data):
         return cls()
+
+
+@dataclass
+class PlayersChangedMessage(Message):
+    type = MessageType.PLAYERS_CHANGED
+    format = "<Bi"
+
+    new_players: int
+
+    def pack(self):
+        return struct.pack(self.format, self.type.value, self.new_players)
+
+    @classmethod
+    def unpack_data(cls, data):
+        _, new_players = struct.unpack(cls.format, data)
+        return cls(new_players)
 
 
 if __name__ == "__main__":
@@ -422,9 +419,8 @@ associated_classes = {
     MessageType.TIMEOUT: TimeOutMessage,
     MessageType.ANSWER: AnswerMessage,
     MessageType.RESULT: ResultMessage,
-    MessageType.TICK: TickMessage,
     MessageType.WINNER: WinnerMessage,
     MessageType.DISQUALIFIED: DisqualifiedMessage,
     MessageType.DISCONNECT: DisconnectMessage,
+    MessageType.PLAYERS_CHANGED: M,
 }
-
