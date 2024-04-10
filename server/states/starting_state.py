@@ -10,6 +10,7 @@ from . import waiting_state
 
 import time
 
+
 class StartingState(State):
     def handle(self, data_pack) -> None:
         match data_pack:
@@ -184,13 +185,18 @@ class StartingState(State):
             print("Winner:", winner.name)
             # Broadcast the winner message to all players
             for address, player in self.context.players.items():
-                print(WinnerMessage(winner.name).pack())
-                print(player.client_socket.sendall(WinnerMessage(winner.name).pack()))
+                print(
+                    player.client_socket.sendall(
+                        WinnerMessage(True, winner.name).pack()
+                    )
+                )
 
             # End the game
             self.context.transition_to(waiting_state.WaitingState())
             self.context.current_game = None
         else:
+            for address, player in self.context.players.items():
+                print(player.client_socket.sendall(WinnerMessage(False, "").pack()))
             # Start next round
             self.context.current_game.remaining_time = -1
 
