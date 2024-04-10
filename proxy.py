@@ -144,3 +144,9 @@ class Proxy:
             ('Player 2', 2),
             ('Player 3', 1),
         ]
+    
+    def get_number_of_players(self):
+        return 3
+    
+    def get_number_of_ready_players(self):
+        return 3

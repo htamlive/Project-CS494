@@ -87,6 +87,12 @@ class WaitingRoomState(State):
             
     def get_current_players(self):
         return self.game.proxy.get_current_players()
+    
+    def get_number_of_players(self):
+        return self.game.proxy.get_number_of_players()
+    
+    def get_number_of_ready_players(self):
+        return self.game.proxy.get_number_of_ready_players()
 
 
     def draw(self):
@@ -99,9 +105,19 @@ class WaitingRoomState(State):
         
 
         if(self.is_ready):
-            arcade.draw_text("Waiting for other players...", SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 230, 
+            arcade.draw_text("Waiting for other players...", SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2, 
                          arcade.color.BLACK, 12, font_name=self.font,align='center',width=300)
+        else:
+            arcade.draw_text("Press Ready when you're ready", SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2, 
+                         arcade.color.BLACK, 12, font_name=self.font,align='center',width=300)
+            
+        no_of_players = self.get_number_of_players()
+        no_of_ready_players = self.get_number_of_ready_players()
+
+        arcade.draw_text(f"{no_of_ready_players}/{no_of_players} ready", SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 90, 
+                         arcade.color.BLACK, 20, font_name=self.font,align='center',width=300)
         
-        for idx, player in enumerate(self.players):
-            arcade.draw_text(player, SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2 + 80 - idx * 40, 
-                             arcade.color.BLACK, 20, font_name=self.font)
+        
+        # for idx, player in enumerate(self.players):
+        #     arcade.draw_text(player, SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2 + 80 - idx * 40, 
+        #                      arcade.color.BLACK, 20, font_name=self.font)
