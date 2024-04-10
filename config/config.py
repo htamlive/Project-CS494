@@ -21,5 +21,10 @@ class Result(Enum):
     INCORRECT = 'Incorrect'
     DISQUALIFIED = 'Disqualified'
 
-class SOCKET_RETURN(Enum):
+class Summary_type(Enum):
+    WINNER = 'Winner'
+
+    DISQUALIFIED = 'Disqualified' # Use for consistent in the SummaryState
+
+class Socket_return(Enum):
     IS_WAITING = 'is_waiting'

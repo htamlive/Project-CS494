@@ -25,6 +25,7 @@ class Proxy:
         self.score = 0
 
         self.result = None
+        self.user_name = ""
 
     def on_update(self, delta_time):
         '''
@@ -37,8 +38,12 @@ class Proxy:
         If correct, please register the user to the game
         The player will be in ready state
         '''
+        self.user_name = name
         self.current_mode = mode
         return True
+    
+    def get_user_name(self):    
+        return self.user_name
     
     def get_current_players(self):
         '''
@@ -169,7 +174,7 @@ class Proxy:
     def get_number_of_players_in_game(self):
         return 3
     
-    def get_winner(self):
+    def check_winner(self):
         '''
         Use for lost players
 

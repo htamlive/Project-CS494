@@ -39,7 +39,7 @@ class ChooseModeState(State):
                 current_text = self.input_popup.get_current_text()
                 ret = self.register_with_name(current_text)
 
-                if ret != SOCKET_RETURN.IS_WAITING:
+                if ret != Socket_return.IS_WAITING:
                     if ret:
                         self.input_popup.show_noti("Valid name", arcade.color.GREEN)
                         self.game.turn_off_notification('input name')
