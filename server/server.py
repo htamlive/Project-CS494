@@ -2,7 +2,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from message import *
 from .player import Player
-from .message_data import MessageData
+from .message_data import MessageData, TickMessage
 from .config import *
 from .game import Game
 
@@ -82,7 +82,7 @@ class GameServer:
     def timer_loop(self):
         # Timer loop to send 'tick' message into the queue
         while True:
-            self.message_queue.put(MessageData(TickMessage(), None, None))
+            self.message_queue.put(TickMessage())
             time.sleep(1)
 
     def process_messages(self):

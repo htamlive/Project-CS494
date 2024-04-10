@@ -39,6 +39,9 @@ class WaitingState(State):
             player_name, client_socket, client_address
         )
         client_socket.send(JoinAckMessage().pack())
+        for address, player in self.context.players.items():
+            player_count = len(self.context.players)
+            player.client_socket.send(PlayersChangedMessage(player_count).pack())
 
     def _handle_ready(self, message: ReadyMessage, client_address) -> None:
         if not message.state:
@@ -78,8 +81,9 @@ class WaitingState(State):
         if client_address in self.context.players:
             del self.context.players[client_address]
 
-        # # Broadcast the player disconnected message to all players
-        # for address, player in self.context.players.items():
-        #     player.client_socket.send(PlayerDisconnectedMessage().pack())
+        # Broadcast the player disconnected message to all players
+        for address, player in self.context.players.items():
+            player_count = len(self.context.players)
+            player.client_socket.send(PlayersChangedMessage(player_count).pack())
 
         print("Player disconnected.")
