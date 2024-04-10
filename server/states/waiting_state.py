@@ -39,6 +39,9 @@ class WaitingState(State):
             player_name, client_socket, client_address
         )
         client_socket.send(JoinAckMessage().pack())
+        for address, player in self.context.players.items():
+            player_count = len(self.context.players)
+            player.client_socket.send(PlayersChangedMessage(player_count).pack())
 
     def _handle_ready(self, message: ReadyMessage, client_address) -> None:
         if not message.state:
