@@ -1,3 +1,4 @@
+from __future__ import annotations
 import struct
 from enum import Enum
 from dataclasses import dataclass
@@ -20,6 +21,7 @@ class MessageType(Enum):
     DISCONNECT = 0xE
 
 
+
 @dataclass
 class Message:
     def __init__(self):
@@ -27,6 +29,10 @@ class Message:
 
     def pack(self):
         raise NotImplementedError
+
+    @classmethod
+    def length(cls):
+        return struct.calcsize(cls.format)
 
     @classmethod
     def unpack(cls, data):
@@ -266,9 +272,7 @@ class WinnerMessage(Message):
     type = MessageType.WINNER
     format = "<B6s"
 
-    def __init__(self, name: str):
-        super().__init__()
-        self.name = name
+    name: str
 
     def pack(self):
         name_bytes = self.name.encode()
@@ -406,3 +410,21 @@ if __name__ == "__main__":
 
 # ready_message = ReadyMessage(1)
 # print("Ready Message:", ready_message.pack())
+
+associated_classes = {
+    MessageType.JOIN: JoinMessage,
+    MessageType.JOIN_DENY: JoinDenyMessage,
+    MessageType.JOIN_ACK: JoinAckMessage,
+    MessageType.READY: ReadyMessage,
+    MessageType.READY_CHANGE: ReadyChangeMessage,
+    MessageType.START_GAME: StartGameMessage,
+    MessageType.QUESTION: QuestionMessage,
+    MessageType.TIMEOUT: TimeOutMessage,
+    MessageType.ANSWER: AnswerMessage,
+    MessageType.RESULT: ResultMessage,
+    MessageType.TICK: TickMessage,
+    MessageType.WINNER: WinnerMessage,
+    MessageType.DISQUALIFIED: DisqualifiedMessage,
+    MessageType.DISCONNECT: DisconnectMessage,
+}
+

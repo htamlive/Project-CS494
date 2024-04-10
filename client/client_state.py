@@ -103,6 +103,10 @@ class WaitingForQuestion(ClientState):
                         self.context, first_number, second_number, operation
                     )
                 )
+            case ServerMessage(WinnerMessage(winner)):
+                logger.info("Received winner message")
+                print(f"{winner} won!")
+                self.context.set_state(Winner(self.context))
             case _:
                 raise ValueError("WaitingForQuestion: invalid event " + str(message))
 
@@ -139,15 +143,34 @@ class WaitingForResult(ClientState):
         message = self.context.wait_for_message()
         logger.info("Received message: %s", message)
         match message:
+            case ServerMessage(TimeOutMessage()):
+                logger.info("Other player all answered")
+            case _:
+                raise ValueError("Should recieve TimeOutMessage before ResultMessage")
+
+        message = self.context.wait_for_message()
+
+        match message:
             case ServerMessage(ResultMessage(answer, is_correct, new_pos)):
                 if is_correct:
-                    print(str(answer) + " is correct!")
+                    print(str(answer) + " is CORRECT!")
+                else:
+                    print(str(answer) + " is WRONG!")
                 self.context.update_position(new_pos)
                 self.context.set_state(WaitingForQuestion(self.context))
-            case ServerMessage(TimeOutMessage()):
-                self.context.set_state(WaitingForResult(self.context))
             case _:
                 raise ValueError("WaitingForResult: invalid event " + str(message))
+
+
+@dataclass
+class Winner(ClientState):
+    context: Client
+
+    def __post_init__(self):
+        logger.info("Transitioning to Winner state")
+
+    def handle(self):
+        pass
 
 
 class GameOver(ClientState):
