@@ -15,9 +15,6 @@ class UserEnterName(Event):
 class UserAnswer(Event):
     answer: int
 
-@dataclass
-class UserReady(Event):
-    pass
 
 @dataclass
 class ServerMessage(Event):

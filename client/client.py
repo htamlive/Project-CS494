@@ -1,7 +1,20 @@
-import struct
 from client.event import ServerMessage, UserAnswer
 from config.config import Operator
-from message import Message, Operation
+from message import (
+    AnswerMessage,
+    DisconnectMessage,
+    JoinAckMessage,
+    JoinDenyMessage,
+    JoinMessage,
+    Message,
+    Operation,
+    PlayersChangedMessage,
+    QuestionMessage,
+    ReadyChangeMessage,
+    ReadyMessage,
+    ResultMessage,
+    StartGameMessage,
+)
 from mixins.message_receiver import MessageReceiver
 from .event import UserEnterName, UserAnswer
 from proxy import Proxy
@@ -25,6 +38,8 @@ class Client(Proxy, mixins.MessageReceiver):
         self._position = 0
         self._race_length = 0
         self._name = ""
+        self._number_of_ready_players = 0
+        self._number_of_players = 0
 
         self.host = host
         self.port = port
@@ -47,6 +62,18 @@ class Client(Proxy, mixins.MessageReceiver):
         logger.info("Updating position to %d", position)
         self._position = position
 
+    def _receive_loop(self):
+        while True:
+            response = self._receive_message()
+            self._message_queue.put(ServerMessage(response))
+
+    def _connect(self):
+        self.client_socket.connect((self.host, self.port))
+        print("Connected to server.")
+        threading.Thread(
+            target=self._receive_loop, daemon=True
+        ).start()  # Start a new thread for receiving messages
+
     def wait_for_response(self):
         return self._response_queue.get()
 
@@ -59,58 +86,61 @@ class Client(Proxy, mixins.MessageReceiver):
     def send_message(self, message: Message):
         self.client_socket.send(message.pack())
 
-    def init_time(self):
-        self.time_left = 15
-
     def wait_for_message(self):
         return self._message_queue.get()
 
     def gen_quest(self):
-        while True:
-            self._state.handle()
-            match self._state:
-                case AnsweringQuestion(_, operand1, operand2, operator):
-                    print(f"Question: {operand1} {operator} {operand2}")
-                    op = None
-                    match operator:
-                        case 0x1:
-                            op = Operator.ADD
-                        case 0x2:
-                            op = Operator.SUBTRACT
-                        case 0x3:
-                            op = Operator.MULTIPLY
-                        case 0x4:
-                            op = Operator.DIVIDE
-                        case _:
-                            raise ValueError("Invalid operator")
-                    return operand1, op, operand2, None
-
-    def on_ready(self):
-        while not isinstance(self._state, WaitingForQuestionOrGameResult):
-            self._state.handle()
+        message = self.wait_for_message()
+        match message:
+            case ServerMessage(QuestionMessage(first_number, second_number, operation)):
+                match operation:
+                    case 0x1:
+                        operation = Operator.ADD
+                    case 0x2:
+                        operation = Operation.SUB
+                    case 0x3:
+                        operation = Operation.MUL
+                    case 0x4:
+                        operation = Operation.DIV
+                return first_number, operation, second_number, None
 
     def is_game_started(self):
-        return isinstance(self._state, WaitingForQuestionOrGameResult)
+        if self._message_queue.empty():
+            return False
+        resp = self.wait_for_message()
+        match resp:
+            case ServerMessage(PlayersChangedMessage(n_players)):
+                self._number_of_players = n_players
+            case ServerMessage(ReadyChangeMessage(n_players)):
+                self._number_of_ready_players = n_players
+            case ServerMessage(StartGameMessage(race_length)):
+                self._race_length = race_length
+                return True
+        return False
 
     def register(self, name, mode):
-        self._message_queue.put(UserEnterName(name))
-        self._state.handle()
-        rs = self.wait_for_response()
-        self._name = name
-        return rs
-
-    def _connect(self):
-        self.client_socket.connect((self.host, self.port))
-        print("Connected to server.")
-        threading.Thread(
-            target=self._receive_loop, daemon=True
-        ).start()  # Start a new thread for receiving messages
+        self.send_message(JoinMessage(0, name))
+        rs = self.wait_for_message()
+        match rs:
+            case ServerMessage(JoinAckMessage()):
+                self._name = name
+                return True
+            case ServerMessage(JoinDenyMessage()):
+                return False
+            case _:
+                raise Exception("Unexpected message type")
 
     def set_state(self, state):
         self._state = state
 
     def check_answer(self, answer, _):
-        self._message_queue.put(UserAnswer(int(answer)))
+        self.send_message(AnswerMessage(int(answer)))
+        response = self.wait_for_message()
+        match response:
+            case ServerMessage(ResultMessage(answer, is_correct, new_pos)):
+                if is_correct:
+                    self._position = new_pos
+                return is_correct
 
     def _receive_message(self):
         data = self.receive_message()
@@ -119,18 +149,40 @@ class Client(Proxy, mixins.MessageReceiver):
         logger.info("Received message: %s", msg)
         return msg
 
-    def on_update(self, delta_time):
-        pass
+    def on_ready(self):
+        self.send_message(message=ReadyMessage(True))
 
-    def _receive_loop(self):
-        while True:
-            # try:
-            response = self._receive_message()
-            self._message_queue.put(ServerMessage(response))
-            # if response.type in self.message_handlers:
-            #     self.message_handlers[response.type](response)
-            # else:
-            #     print("Unhandled message type:", response.type)
-        # except Exception as e:
-        #     print("Error receiving message:", e)
-        #     break
+    def get_mode(self):
+        """
+        return the mode of the game
+        """
+        return self.current_mode
+
+    def leave_game(self):
+        """
+        leave the game
+        This function is used when the user clicks the leave button in waiting room or game play state
+        """
+        self.send_message(DisconnectMessage())
+
+    def get_user_top(self):
+        return 1
+
+    def get_user_score(self, stored_score):
+        """
+        You dont need to use the stored score. Just let it to match the calling
+        """
+        return self._position
+
+    def init_time(self):
+        """
+        Initialize the time for the user when the game starts
+        """
+        self.time_left = 15
+        return self.time_left
+
+    def get_number_of_players(self):
+        return self._number_of_ready_players
+
+    def get_number_of_ready_players(self):
+        return self._number_of_players
