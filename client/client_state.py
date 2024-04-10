@@ -1,11 +1,23 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
+import enum
 import logging
 from dataclasses import dataclass
 from message import *
 from .event import *
+import client.client as client
 
 logger = logging.getLogger(__name__)
+
+
+class EndGameStatus(enum.Enum):
+    """
+    Enum for the status of the game when it ends, whether the client won, was disqualified, or lost.
+    """
+
+    WIN = 1
+    DISQUALIFIED = 2
+    OTHER_WIN = 3
 
 
 class ClientState(ABC):
@@ -16,7 +28,7 @@ class ClientState(ABC):
 
 @dataclass
 class Unconnected(ClientState):
-    context: Client
+    context: client.Client
 
     def __post_init__(self):
         logger.info("Transitioning to Unconnected state")
@@ -48,7 +60,7 @@ class Unconnected(ClientState):
 
 @dataclass
 class WaitingForGameStart(ClientState):
-    context: Client
+    context: client.Client
 
     def __post_init__(self):
         logger.info("Transitioning to WaitingForGameStart state")
@@ -61,7 +73,7 @@ class WaitingForGameStart(ClientState):
 
 @dataclass
 class WaitForOtherPlayers(ClientState):
-    context: Client
+    context: client.Client
 
     def __post_init__(self):
         logger.info("Transitioning to WaitForOtherPlayers state")
@@ -75,7 +87,8 @@ class WaitForOtherPlayers(ClientState):
                 case ServerMessage(ReadyChangeMessage(n_ready)):
                     pass
                 case ServerMessage(StartGameMessage(race_length)):
-                    self.context.set_state(WaitingForQuestion(self.context))
+                    self.context.init_race_length(race_length)
+                    self.context.set_state(WaitingForQuestionOrGameResult(self.context))
                     break
                 case _:
                     logger.error("WaitForOtherPlayers: invalid event " + str(message))
@@ -85,8 +98,8 @@ class WaitForOtherPlayers(ClientState):
 
 
 @dataclass
-class WaitingForQuestion(ClientState):
-    context: Client
+class WaitingForQuestionOrGameResult(ClientState):
+    context: client.Client
 
     def __post_init__(self):
         logger.info("Transitioning to WaitingForQuestion state")
@@ -106,14 +119,19 @@ class WaitingForQuestion(ClientState):
             case ServerMessage(WinnerMessage(winner)):
                 logger.info("Received winner message")
                 print(f"{winner} won!")
-                self.context.set_state(Winner(self.context))
+                if winner == self.context.name:
+                    self.context.set_state(GameEnded(self.context, EndGameStatus.WIN))
+                else:
+                    self.context.set_state(
+                        GameEnded(self.context, EndGameStatus.OTHER_WIN)
+                    )
             case _:
                 raise ValueError("WaitingForQuestion: invalid event " + str(message))
 
 
 @dataclass
 class AnsweringQuestion(ClientState):
-    context: Client
+    context: client.Client
     operand1: int
     operand2: int
     operation: Operation
@@ -127,14 +145,15 @@ class AnsweringQuestion(ClientState):
             case UserAnswer(answer):
                 self.context.send_message(AnswerMessage(answer))
                 logger.info("Sent answer")
-                self.context.set_state(WaitingForResult(self.context))
+                self.context.set_state(WaitingForResult(self.context, answer))
             case _:
                 raise ValueError("AnsweringQuestion: invalid event " + str(message))
 
 
 @dataclass
 class WaitingForResult(ClientState):
-    context: Client
+    context: client.Client
+    user_answer: int
 
     def __post_init__(self):
         logger.info("Transitioning to WaitingForResult state")
@@ -151,36 +170,29 @@ class WaitingForResult(ClientState):
         message = self.context.wait_for_message()
 
         match message:
+            case ServerMessage(DisqualifiedMessage()):
+                logger.info("Received disqualified message")
+                self.context.set_state(
+                    GameEnded(self.context, EndGameStatus.DISQUALIFIED)
+                )
             case ServerMessage(ResultMessage(answer, is_correct, new_pos)):
                 if is_correct:
-                    print(str(answer) + " is CORRECT!")
+                    print(str(self.user_answer) + " is CORRECT!")
                 else:
-                    print(str(answer) + " is WRONG!")
+                    print(str(self.user_answer) + " is WRONG!")
                 self.context.update_position(new_pos)
-                self.context.set_state(WaitingForQuestion(self.context))
+                self.context.set_state(WaitingForQuestionOrGameResult(self.context))
             case _:
                 raise ValueError("WaitingForResult: invalid event " + str(message))
 
 
 @dataclass
-class Winner(ClientState):
-    context: Client
+class GameEnded(ClientState):
+    context: client.Client
+    status: EndGameStatus
 
     def __post_init__(self):
-        logger.info("Transitioning to Winner state")
+        logger.info("Transitioning to GameEnded state")
 
     def handle(self):
         pass
-
-
-class GameOver(ClientState):
-    context: Client
-
-    def on_received(self, message):
-        match message:
-            case "GAME_OVER":
-                return Unconnected(self.context)
-            case _:
-                return self
-        while True:
-            self._handle_message()

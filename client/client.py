@@ -8,7 +8,7 @@ from proxy import Proxy
 import socket
 import threading
 from multiprocessing import SimpleQueue
-from .client_state import Unconnected, AnsweringQuestion, WaitingForQuestion
+from .client_state import Unconnected, AnsweringQuestion, WaitingForQuestionOrGameResult
 import logging
 import mixins
 
@@ -23,6 +23,8 @@ class Client(Proxy, mixins.MessageReceiver):
         self._state = Unconnected(self)
         self._points = 0
         self._position = 0
+        self._race_length = 0
+        self._name = ""
 
         self.host = host
         self.port = port
@@ -30,6 +32,13 @@ class Client(Proxy, mixins.MessageReceiver):
         MessageReceiver.__init__(self, self.client_socket)
         self._connect()
         logger.info("Client initialized")
+
+    @property
+    def name(self):
+        return self._name
+
+    def init_race_length(self, race_length):
+        self._race_length = race_length
 
     def update_points(self, points):
         self._points = points
@@ -45,7 +54,7 @@ class Client(Proxy, mixins.MessageReceiver):
         self._response_queue.put(response)
 
     def get_score(self):
-        return self._points
+        return self._position
 
     def send_message(self, message: Message):
         self.client_socket.send(message.pack())
@@ -77,16 +86,17 @@ class Client(Proxy, mixins.MessageReceiver):
                     return operand1, op, operand2, None
 
     def on_ready(self):
-        while not isinstance(self._state, WaitingForQuestion):
+        while not isinstance(self._state, WaitingForQuestionOrGameResult):
             self._state.handle()
 
     def is_game_started(self):
-        return isinstance(self._state, WaitingForQuestion)
+        return isinstance(self._state, WaitingForQuestionOrGameResult)
 
     def register(self, name, mode):
         self._message_queue.put(UserEnterName(name))
         self._state.handle()
         rs = self.wait_for_response()
+        self._name = name
         return rs
 
     def _connect(self):
@@ -115,12 +125,12 @@ class Client(Proxy, mixins.MessageReceiver):
     def _receive_loop(self):
         while True:
             # try:
-                response = self._receive_message()
-                self._message_queue.put(ServerMessage(response))
-                # if response.type in self.message_handlers:
-                #     self.message_handlers[response.type](response)
-                # else:
-                #     print("Unhandled message type:", response.type)
-            # except Exception as e:
-            #     print("Error receiving message:", e)
-            #     break
+            response = self._receive_message()
+            self._message_queue.put(ServerMessage(response))
+            # if response.type in self.message_handlers:
+            #     self.message_handlers[response.type](response)
+            # else:
+            #     print("Unhandled message type:", response.type)
+        # except Exception as e:
+        #     print("Error receiving message:", e)
+        #     break
