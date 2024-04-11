@@ -86,9 +86,12 @@ class SummaryState(State):
                 arcade.draw_text(str(self.player_top), SCREEN_WIDTH // 2 + 50, SCREEN_HEIGHT//2 - 120, arcade.color.VIVID_VIOLET, 28, font_name=self.font2, align="center", width=100)
         
         elif(self.type_of_summary == Summary_type.DISQUALIFIED):
-            arcade.draw_text("DISQUALIFIED", SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT//2 + 10, arcade.color.RED, 40, font_name=self.font2, align="center", width=200)
-        
+            arcade.draw_text("You are", SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT//2 + 100, arcade.color.BLACK, 12, font_name=self.font2, align="center", width=200)
 
+            arcade.draw_text("DISQUALIFIED", SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT//2 + 50, arcade.color.RED, 20, font_name=self.font2, align="center", width=200)
+        
+            arcade.draw_text("Try harder next time!", SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT//2 - 20, arcade.color.BLACK_BEAN, 12, font_name=self.font, align="center", width=200)
+        
 
                     
 

@@ -28,7 +28,10 @@ class WaitingRoomState(State):
 
         self.font = "Paytone One"
             
-        self.players = self.get_current_players()
+        self.players = None
+        
+        
+        self.request_current_players_in_room()
 
         self.is_ready = False
 
@@ -84,10 +87,14 @@ class WaitingRoomState(State):
         super().on_update(delta_time)
         if(self.game.proxy.is_game_started()):
             self.game.push_state(GamePlayState(self.game, self.game.proxy.get_mode()))
-
-
             
-    def get_current_players(self):
+    def request_current_players_in_room(self):
+        # players = self.get_current_players()
+        # if players != Socket_return.IS_WAITING:
+        #     self.players = players
+
+        pass
+        
         return self.game.proxy.get_current_players()
     
     def get_number_of_players(self):
