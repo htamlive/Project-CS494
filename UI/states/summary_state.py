@@ -32,12 +32,21 @@ class SummaryState(State):
 
         self.buttons.extend([self.back_button])
 
+        self.player_top = None
+        self.request_player_top()
 
 
 
-    def get_top(self):
-        return self.game.proxy.get_user_top()
 
+    def request_player_top(self):
+        def query_func():
+            player_top = self.get_player_top()
+            if player_top != Socket_return.IS_WAITING:
+                self.player_top = player_top
+                return True
+            return False
+        
+        self.game.waiting_notification.add_query(query_func)
 
     def draw(self):
         super().draw()
@@ -70,8 +79,8 @@ class SummaryState(State):
             arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2 - 100 + 20, SCREEN_HEIGHT//2 - 120 + 10,
                                                 self.top_title, 0.6)
         
-
-            arcade.draw_text(str(self.get_top()), SCREEN_WIDTH // 2 + 50, SCREEN_HEIGHT//2 - 120, arcade.color.VIVID_VIOLET, 28, font_name=self.font2, align="center", width=100)
+            if(self.player_top is not None):
+                arcade.draw_text(str(self.player_top()), SCREEN_WIDTH // 2 + 50, SCREEN_HEIGHT//2 - 120, arcade.color.VIVID_VIOLET, 28, font_name=self.font2, align="center", width=100)
         
         elif(self.type_of_summary == Summary_type.DISQUALIFIED):
             arcade.draw_text("DISQUALIFIED", SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT//2 + 10, arcade.color.RED, 40, font_name=self.font2, align="center", width=200)
