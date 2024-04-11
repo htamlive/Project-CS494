@@ -28,12 +28,14 @@ class WaitingRoomState(State):
 
         self.font = "Paytone One"
             
-        self.players = None
-        
+        self.players = []
         
         self.request_current_players_in_room()
 
         self.is_ready = False
+
+        self.current_page = 0
+        self.player_per_page = 4
 
         # start_button = ImageButton("resources/images/btnStart.png", 0.4)
         # start_button.click_scale_factor = 0.5
@@ -41,6 +43,32 @@ class WaitingRoomState(State):
         # start_button.center_y = SCREEN_HEIGHT // 2 - 235
 
         # start_button.on_click = lambda : self.game.push_state(GamePlayState(self.game, mode))
+
+        
+        left_arrow_button = HoverLineButton("resources/images/leftArrow.png", 0.2)
+        left_arrow_button.click_scale_factor = 0.3
+        left_arrow_button.center_x = SCREEN_WIDTH//2 - 40
+        left_arrow_button.center_y = SCREEN_HEIGHT//2 - 80 - 90
+        left_arrow_button.hovered_line_speed = 5
+
+        right_arrow_button = HoverLineButton("resources/images/rightArrow.png", 0.2)
+        right_arrow_button.click_scale_factor = 0.3
+        right_arrow_button.center_x = SCREEN_WIDTH//2 + 40
+        right_arrow_button.center_y = SCREEN_HEIGHT//2 - 80 - 90
+        right_arrow_button.hovered_line_speed = 5
+
+        def on_left_arrow():
+            if self.current_page > 0:
+                self.current_page -= 1
+
+        def on_right_arrow():
+            
+            if (self.current_page + 1)*self.player_per_page< len(self.players):
+                self.current_page += 1
+
+        left_arrow_button.on_click = on_left_arrow
+        right_arrow_button.on_click = on_right_arrow
+
 
         leave_button = HoverLineButton("resources/images/btnLeave.png", 0.8, line_color=arcade.color.RED)
         leave_button.click_scale_factor = 0.9
@@ -67,7 +95,7 @@ class WaitingRoomState(State):
         leave_button.on_click = on_leave
 
 
-        self.buttons.extend([ready_button,leave_button])
+        self.buttons.extend([ready_button,leave_button, left_arrow_button, right_arrow_button])
 
         
 
@@ -85,17 +113,26 @@ class WaitingRoomState(State):
 
     def on_update(self, delta_time):
         super().on_update(delta_time)
+        self.request_current_players_in_room()
         if(self.game.proxy.is_game_started()):
             self.game.push_state(GamePlayState(self.game, self.game.proxy.get_mode()))
+
             
     def request_current_players_in_room(self):
-        # players = self.get_current_players()
-        # if players != Socket_return.IS_WAITING:
-        #     self.players = players
+        players = self.game.proxy.get_current_players()
+        if players != Socket_return.IS_WAITING:
+            if(self.check_diff_players(players)):
+                self.current_page = 0
+                self.players = players
 
-        pass
-        
-        return self.game.proxy.get_current_players()
+    def check_diff_players(self, players):
+
+        if len(self.players) != len(players):
+            return True
+        for i in range(len(players)):
+            if self.players[i][0] != players[i][0] or self.players[i][1] != players[i][1]:
+                return True
+        return False
     
     def get_number_of_players(self):
         return self.game.proxy.get_number_of_players()
@@ -114,10 +151,10 @@ class WaitingRoomState(State):
         
 
         if(self.is_ready):
-            arcade.draw_text("Waiting for other players...", SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2, 
+            arcade.draw_text("Waiting for other players...", SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 40, 
                          arcade.color.BLACK, 12, font_name=self.font,align='center',width=300)
         else:
-            arcade.draw_text("Press Ready when you're ready", SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2, 
+            arcade.draw_text("Press Ready when you're ready", SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 40, 
                          arcade.color.BLACK, 12, font_name=self.font,align='center',width=300)
             
         no_of_players = self.get_number_of_players()
@@ -127,6 +164,7 @@ class WaitingRoomState(State):
                          arcade.color.BLACK, 20, font_name=self.font,align='center',width=300)
         
         
-        # for idx, player in enumerate(self.players):
-        #     arcade.draw_text(player, SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2 + 80 - idx * 40, 
-        #                      arcade.color.BLACK, 20, font_name=self.font)
+        for idx, (player_name, is_ready) in enumerate(self.players[self.current_page * self.player_per_page: (self.current_page + 1) * self.player_per_page]):
+            color = arcade.color.LIME_GREEN if is_ready else arcade.color.BLACK
+            arcade.draw_text(player_name, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 5 - idx * 40, 
+                             color, 20, font_name=self.font, align='center', width=200)
