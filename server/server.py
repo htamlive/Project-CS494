@@ -1,6 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from message import *
+from utils.message_receiver import MessageReceiver
 from .player import Player
 from .message_data import MessageData, TickMessage
 from .config import *
@@ -61,9 +62,10 @@ class GameServer:
 
     def handle_client(self, client_socket, client_address):
         # Receive messages from the client and put them into the message queue
+        receiver = MessageReceiver(client_socket)
         while True:
             try:
-                data = client_socket.recv(1024)
+                data = receiver.receive_message()
                 if not data:
                     break
                 # Put received message into the queue
@@ -78,6 +80,7 @@ class GameServer:
         self.message_queue.put(
             MessageData(DisconnectMessage(), client_socket, client_address)
         )
+        print("Client disconnected:", client_address)
 
     def timer_loop(self):
         # Timer loop to send 'tick' message into the queue
