@@ -81,21 +81,6 @@ class ChooseModeState(State):
         return self.game.proxy.register(name, self.mode)
     
 
-    
-    def renew_input_box(self):
-        self.ui_manager.remove(self.input_box)
-        self.input_box = self.init_input_box()
-        self.ui_manager.add(self.input_box)
-
-    def on_key_press(self, symbol: int, modifiers: int):
-        super().on_key_press(symbol, modifiers)
-
-        self.ui_manager.on_key_press(symbol, modifiers)
-
-        if(self.input_box.text == ''):
-            self.renew_input_box()
-            self.input_box._active = True
-
 
     def draw(self):
         arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT//2 + 160, 

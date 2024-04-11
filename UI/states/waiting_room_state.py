@@ -24,7 +24,9 @@ class WaitingRoomState(State):
         # traditional_button.center_y = SCREEN_HEIGHT // 2 - 20
         # self.buttons.extend([traditional_button, blitz_button])
             
-        self.font = arcade.load_font("resources/fonts/PaytoneOne-Regular.ttf")
+        arcade.load_font("resources/fonts/PaytoneOne-Regular.ttf")
+
+        self.font = "Paytone One"
             
         self.players = self.get_current_players()
 

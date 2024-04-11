@@ -25,6 +25,9 @@ class NotificationBase:
         for button in self.buttons:
             button.on_mouse_press(x, y, button, modifiers)
 
+    def on_key_press(self, symbol: int, modifiers: int):
+        pass
+
     def draw(self):
         pass
 
@@ -123,7 +126,9 @@ class InputPopup(NotificationBase):
         self.cancel_button.center_y = SCREEN_HEIGHT // 2 - 80
         self.cancel_button.hovered_line_speed = 10
 
-        self.font = arcade.load_font("resources/fonts/UTM ANDROGYNE.TTF")
+        arcade.load_font("resources/fonts/UTM ANDROGYNE.TTF")
+
+        self.font = "UTM Androgyne"
 
 
         self.ok_button.on_click = self.on_ok
@@ -140,9 +145,9 @@ class InputPopup(NotificationBase):
 
     def init_input_box(self):
         return UIInputText(
-            x = SCREEN_WIDTH // 2 - 120,
+            x = SCREEN_WIDTH // 2 - 150,
             y = SCREEN_HEIGHT // 2 - 40,
-            width = 200,
+            width = 290,
             height = 50,
             font_name = self.font,
             font_size = 20,
@@ -191,7 +196,21 @@ class InputPopup(NotificationBase):
             arcade.draw_text(self.message_noti, SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 20, self.message_noti_color, 11,
                          align="center", width=300)
             
-        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 5, self.submission_box)
+        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 10, self.submission_box, 1.2)
+
+    def renew_input_box(self):
+        self.ui_manager.remove(self.input_box)
+        self.input_box = self.init_input_box()
+        self.ui_manager.add(self.input_box)
+
+    def on_key_press(self, symbol: int, modifiers: int):
+        super().on_key_press(symbol, modifiers)
+
+        self.ui_manager.on_key_press(symbol, modifiers)
+
+        if(self.input_box.text == ''):
+            self.renew_input_box()
+            self.input_box._active = True
 
 
 class WaitingNotification(NotificationBase):
