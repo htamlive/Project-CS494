@@ -1,4 +1,4 @@
-from client.event import ServerMessage, UserAnswer
+from client.event import ServerMessage
 from config.config import Socket_return, Operator, Result
 from message import (
     AnswerMessage,
@@ -8,7 +8,6 @@ from message import (
     JoinDenyMessage,
     JoinMessage,
     Message,
-    Operation,
     PlayersChangedMessage,
     QuestionMessage,
     ReadyChangeMessage,
@@ -102,6 +101,9 @@ class Client(Proxy):
                 return False
             case _:
                 raise Exception("Unexpected message type %s", rs)
+
+    def get_current_players(self):
+        return self._current_player_list
 
     def gen_quest(self):
         if self._message_queue.empty():
