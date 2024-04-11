@@ -252,14 +252,14 @@ class ResultMessage(Message):
 @dataclass
 class WinnerMessage(Message):
     type = MessageType.WINNER
-    format = "<B6s"
+    format = "<B?6s"
 
     have_winner: bool
     name: str
 
     def pack(self):
         name_bytes = self.name.encode()
-        return struct.pack(self.format, self.type.value, name_bytes)
+        return struct.pack(self.format, self.type.value, self.have_winner, name_bytes)
 
     @classmethod
     def unpack_data(cls, data):
