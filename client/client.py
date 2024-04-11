@@ -33,8 +33,7 @@ class Client(Proxy):
         Proxy.__init__(self)
         self._message_queue = SimpleQueue()
         self._response_queue = SimpleQueue()
-        self._points = 0
-        self._position = 0
+        self._position = 1
         self._race_length = 0
         self._name = ""
         self._number_of_ready_players = 0
@@ -57,7 +56,6 @@ class Client(Proxy):
         return self._name
 
     def update_position(self, position):
-        logger.info("Updating position to %d", position)
         self._position = position
 
     def _receive_loop(self):
