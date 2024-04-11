@@ -1,8 +1,9 @@
 from client.event import ServerMessage, UserAnswer
-from config.config import Operator
+from config.config import Socket_return, Operator, Result
 from message import (
     AnswerMessage,
     DisconnectMessage,
+    DisqualifiedMessage,
     JoinAckMessage,
     JoinDenyMessage,
     JoinMessage,
@@ -14,26 +15,24 @@ from message import (
     ReadyMessage,
     ResultMessage,
     StartGameMessage,
+    TimeOutMessage,
+    WinnerMessage,
 )
-from mixins.message_receiver import MessageReceiver
-from .event import UserEnterName, UserAnswer
 from proxy import Proxy
 import socket
 import threading
 from multiprocessing import SimpleQueue
-from .client_state import Unconnected, AnsweringQuestion, WaitingForQuestionOrGameResult
 import logging
-import mixins
+import utils
 
 logger = logging.getLogger(__name__)
 
 
-class Client(Proxy, mixins.MessageReceiver):
+class Client(Proxy):
     def __init__(self, host, port):
         Proxy.__init__(self)
         self._message_queue = SimpleQueue()
         self._response_queue = SimpleQueue()
-        self._state = Unconnected(self)
         self._points = 0
         self._position = 0
         self._race_length = 0
@@ -44,19 +43,17 @@ class Client(Proxy, mixins.MessageReceiver):
         self.host = host
         self.port = port
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        MessageReceiver.__init__(self, self.client_socket)
+        self.receiver = utils.MessageReceiver(self.client_socket)
         self._connect()
+        self._temp_msgs = []
         logger.info("Client initialized")
+
+    def receive_message(self):
+        return self.receiver.receive_message()
 
     @property
     def name(self):
         return self._name
-
-    def init_race_length(self, race_length):
-        self._race_length = race_length
-
-    def update_points(self, points):
-        self._points = points
 
     def update_position(self, position):
         logger.info("Updating position to %d", position)
@@ -74,17 +71,15 @@ class Client(Proxy, mixins.MessageReceiver):
             target=self._receive_loop, daemon=True
         ).start()  # Start a new thread for receiving messages
 
-    def wait_for_response(self):
-        return self._response_queue.get()
-
-    def put_response(self, response):
-        self._response_queue.put(response)
+    def _receive_message(self):
+        data = self.receive_message()
+        logger.info("Received data: %s", data)
+        msg = Message.unpack(data)
+        logger.info("Received message: %s", msg)
+        return msg
 
     def get_score(self):
         return self._position
-
-    def set_state(self, state):
-        self._state = state
 
     def send_message(self, message: Message):
         self.client_socket.send(message.pack())
@@ -92,20 +87,40 @@ class Client(Proxy, mixins.MessageReceiver):
     def wait_for_message(self):
         return self._message_queue.get()
 
+    # ================== Proxy methods ================== #
+
+    def register(self, name, mode):
+        self.send_message(JoinMessage(0, name))
+        rs = self.wait_for_message()
+        match rs:
+            case ServerMessage(JoinAckMessage()):
+                self._name = name
+                return True
+            case ServerMessage(JoinDenyMessage()):
+                return False
+            case _:
+                raise Exception("Unexpected message type %s", rs)
+
     def gen_quest(self):
+        # if self._message_queue.empty():
+        #     return Socket_return.IS_WAITING
         message = self.wait_for_message()
         match message:
             case ServerMessage(QuestionMessage(first_number, second_number, operation)):
+                self.init_time()
                 match operation:
                     case 0x1:
                         operation = Operator.ADD
                     case 0x2:
-                        operation = Operation.SUB
+                        operation = Operator.SUBTRACT
                     case 0x3:
-                        operation = Operation.MUL
+                        operation = Operator.MULTIPLY
                     case 0x4:
-                        operation = Operation.DIV
+                        operation = Operator.DIVIDE
                 return first_number, operation, second_number, None
+
+    def on_ready(self):
+        self.send_message(message=ReadyMessage(True))
 
     def is_game_started(self):
         if self._message_queue.empty():
@@ -119,38 +134,33 @@ class Client(Proxy, mixins.MessageReceiver):
             case ServerMessage(StartGameMessage(race_length)):
                 self._race_length = race_length
                 return True
-        return False
-
-    def register(self, name, mode):
-        self.send_message(JoinMessage(0, name))
-        rs = self.wait_for_message()
-        match rs:
-            case ServerMessage(JoinAckMessage()):
-                self._name = name
-                return True
-            case ServerMessage(JoinDenyMessage()):
-                return False
             case _:
                 raise Exception("Unexpected message type")
 
-    def check_answer(self, answer, _):
+    def submit_answer(self, answer, _):
+        print("Submitting answer")
         self.send_message(AnswerMessage(int(answer)))
+
+    def check_result(self):
+        if self._message_queue.empty():
+            return Socket_return.IS_WAITING
         response = self.wait_for_message()
         match response:
+            case ServerMessage(DisqualifiedMessage()):
+                return Result.DISQUALIFIED
+            case ServerMessage(TimeOutMessage()):
+                self._temp_msgs.append(response)
+                return Socket_return.IS_WAITING
             case ServerMessage(ResultMessage(answer, is_correct, new_pos)):
-                if is_correct:
-                    self._position = new_pos
-                return is_correct
-
-    def _receive_message(self):
-        data = self.receive_message()
-        logger.info("Received data: %s", data)
-        msg = Message.unpack(data)
-        logger.info("Received message: %s", msg)
-        return msg
-
-    def on_ready(self):
-        self.send_message(message=ReadyMessage(True))
+                match self._temp_msgs.pop(0):
+                    case ServerMessage(TimeOutMessage()):
+                        if is_correct:
+                            self._position = new_pos
+                        return Result.CORRECT if is_correct else Result.INCORRECT
+                    case _:
+                        raise Exception("Unexpected message type %s", response)
+            case _:
+                raise Exception("Unexpected message type %s", response)
 
     def get_mode(self):
         """
@@ -168,16 +178,13 @@ class Client(Proxy, mixins.MessageReceiver):
     def get_user_top(self):
         return 1
 
+    def request_racing_length(self):
+        return self._race_length
+
     def get_user_score(self, stored_score):
-        """
-        You dont need to use the stored score. Just let it to match the calling
-        """
         return self._position
 
     def init_time(self):
-        """
-        Initialize the time for the user when the game starts
-        """
         self.time_left = 15
         return self.time_left
 
@@ -189,3 +196,16 @@ class Client(Proxy, mixins.MessageReceiver):
 
     def get_number_of_ready_players(self):
         return self._number_of_ready_players
+
+    def check_winner(self):
+        print("Checking winner")
+        if self._message_queue.empty():
+            return Socket_return.IS_WAITING
+        resp = self.wait_for_message()
+        match resp:
+            case ServerMessage(WinnerMessage(have_winner, winner_name)):
+                if have_winner:
+                    return winner_name
+                return None
+            case _:
+                raise Exception("Unexpected message type")
