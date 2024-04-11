@@ -24,23 +24,26 @@ class WaitingState(State):
         print("Join message:", repr(message))
 
         player_name = message.name
-        if (
-            len(self.context.players) == MAX_PLAYERS
-            or any(
-                player.name == player_name for player in self.context.players.values()
-            )
+        if len(self.context.players) == MAX_PLAYERS or any(
+            player.name == player_name for player in self.context.players.values()
         ):
             client_socket.send(JoinDenyMessage().pack())
             return
 
         print("Player joined:", player_name)
+        # Provide the player with the list of initial players
+        client_socket.send(JoinAckMessage().pack())
+        for _, player in self.context.players.items():
+            client_socket.send(
+                PlayersChangedMessage(player_name=player.name, is_join=True).pack()
+            )
         self.context.players[client_address] = Player(
             player_name, client_socket, client_address
         )
-        client_socket.send(JoinAckMessage().pack())
-        for address, player in self.context.players.items():
-            player_count = len(self.context.players)
-            player.client_socket.send(PlayersChangedMessage(player_count).pack())
+        for _, player in self.context.players.items():
+            player.client_socket.send(
+                PlayersChangedMessage(player_name=player_name, is_join=True).pack()
+            )
 
     def _handle_ready(self, message: ReadyMessage, client_address) -> None:
         if not message.state:
@@ -50,11 +53,11 @@ class WaitingState(State):
             return
 
         # Check if the player is already ready
-        player = self.context.players[client_address]
-        if player.ready:
+        cur_player = self.context.players[client_address]
+        if cur_player.ready:
             return
 
-        player.ready = True
+        cur_player.ready = True
 
         # Get number of ready players
         ready_players = sum(
@@ -63,13 +66,13 @@ class WaitingState(State):
 
         # Broadcast the ready message to all players
         for address, player in self.context.players.items():
-            player.client_socket.send(ReadyChangeMessage(ready_players).pack())
+            player.client_socket.send(ReadyChangeMessage(cur_player.name, True).pack())
 
         # Check if all players are ready
         if ready_players == len(self.context.players):
             # Broadcast the start game message to all players
-            for address, player in self.context.players.items():
-                player.client_socket.send(StartGameMessage(RACE_LENGTH).pack())
+            for address, cur_player in self.context.players.items():
+                cur_player.client_socket.send(StartGameMessage(RACE_LENGTH).pack())
 
             # Start the game
             self.context.transition_to(starting_state.StartingState())
@@ -77,12 +80,18 @@ class WaitingState(State):
             print("Game started!")
 
     def _handle_disconnect(self, client_address) -> None:
+        player_name = ""
         if client_address in self.context.players:
+            player_name = self.context.players[client_address].name
             del self.context.players[client_address]
+        else:
+            return
 
         # Broadcast the player disconnected message to all players
         for address, player in self.context.players.items():
             player_count = len(self.context.players)
-            player.client_socket.send(PlayersChangedMessage(player_count).pack())
+            player.client_socket.send(
+                PlayersChangedMessage(player_name=player_name, is_join=False).pack()
+            )
 
         print("Player disconnected.")

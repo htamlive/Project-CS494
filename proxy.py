@@ -53,9 +53,15 @@ class Proxy:
 
     def get_current_players(self):
         """
-        return the list of current players
+        return the list of pairs (player_name, is_ready)
         """
-        return ["Player 1", "Player 2", "Player 3"]
+        return [("Player 1", True),
+                ("Player 2", True),
+                ("Player 3", True),
+                ("Player 4", False),
+                ("Player 5", False),
+                ("Player 6", False),
+                ]
 
     def is_game_started(self):
         """

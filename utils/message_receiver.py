@@ -19,5 +19,4 @@ class MessageReceiver:
             data = self.socket.recv(4096)
         data = self.current_buffer[:length]
         self.current_buffer = self.current_buffer[length:]
-        print(data)
         return data
