@@ -40,6 +40,7 @@ class Client(Proxy):
         self._number_of_players = 0
         self._remaining_players = 0
         self._current_answer_result = None
+        self._players_in_waiting_room = []
         self._current_player_list = []
 
         self.host = host
@@ -130,11 +131,29 @@ class Client(Proxy):
             return False
         resp = self.wait_for_message()
         match resp:
-            case ServerMessage(PlayersChangedMessage(n_players)):
-                self._number_of_players = n_players
-            case ServerMessage(ReadyChangeMessage(n_players)):
-                self._number_of_ready_players = n_players
+            case ServerMessage(PlayersChangedMessage(player_name, is_join)):
+                if is_join:
+                    self._number_of_players += 1
+                    self._players_in_waiting_room.append((player_name, False))
+                else:
+                    self._number_of_players -= 1
+                    if (player_name, True) in self._players_in_waiting_room:
+                        self._players_in_waiting_room.remove((player_name, True))
+                    elif (player_name, False) in self._players_in_waiting_room:
+                        self._players_in_waiting_room.remove((player_name, False))
+
+            case ServerMessage(ReadyChangeMessage(player_name, is_ready)):
+                if is_ready:
+                    self._number_of_ready_players += 1
+                    self._players_in_waiting_room.remove((player_name, False))
+                    self._players_in_waiting_room.append((player_name, True))
+                else:
+                    self._number_of_ready_players -= 1
+                    self._players_in_waiting_room.remove((player_name, True))
+                    self._players_in_waiting_room.append((player_name, False))
             case ServerMessage(StartGameMessage(race_length)):
+                for player in self._players_in_waiting_room:
+                    self._current_player_list.append((player[0], 1))
                 self._race_length = race_length
                 return True
             case _:

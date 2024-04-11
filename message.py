@@ -122,20 +122,23 @@ class ReadyMessage(Message):
 @dataclass
 class ReadyChangeMessage(Message):
     type = MessageType.READY_CHANGE
-    format = "<BI"
+    format = "<B10s?"
 
-    nums_of_ready: int
+    player_name: str
+    is_ready: bool
 
     def __post_init__(self):
         super().__init__()
 
     def pack(self):
-        return struct.pack(self.format, self.type.value, self.nums_of_ready)
+        name_bytes = self.player_name.encode()
+        return struct.pack(self.format, self.type.value, name_bytes, self.is_ready)
 
     @classmethod
     def unpack_data(cls, data):
-        _, nums_of_ready = struct.unpack(cls.format, data)
-        return cls(nums_of_ready)
+        _, player_name, is_ready = struct.unpack(cls.format, data)
+        player_name = player_name.decode().rstrip("\x00")
+        return cls(player_name, is_ready)
 
 
 @dataclass
@@ -310,17 +313,19 @@ class DisconnectMessage(Message):
 @dataclass
 class PlayersChangedMessage(Message):
     type = MessageType.PLAYERS_CHANGED
-    format = "<Bi"
+    format = "<B10s?"
 
-    new_players: int
+    player_name: str
+    is_join: bool
 
     def pack(self):
-        return struct.pack(self.format, self.type.value, self.new_players)
+        name_bytes = self.player_name.encode()
+        return struct.pack(self.format, self.type.value, name_bytes, self.is_join)
 
     @classmethod
     def unpack_data(cls, data):
-        _, new_players = struct.unpack(cls.format, data)
-        return cls(new_players)
+        _, name_bytes, is_join = struct.unpack(cls.format, data)
+        return cls(name_bytes.decode().rstrip("\x00"), is_join)
 
 
 if __name__ == "__main__":
