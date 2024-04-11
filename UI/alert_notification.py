@@ -222,6 +222,9 @@ class WaitingNotification(NotificationBase):
 
         self.query_func = []
 
+        self.accumulated_dot = 0
+        self.speed = 1.5
+
         arcade.load_font("resources/fonts/UTM ANDROGYNE.TTF")
         arcade.load_font("resources/fonts/PaytoneOne-Regular.ttf")
         self.font = "Paytone One"
@@ -232,6 +235,11 @@ class WaitingNotification(NotificationBase):
     def on_update(self, delta_time):
         super().on_update(delta_time)
         self.set_enabled(len(self.query_func) != 0)
+
+        self.accumulated_dot += delta_time * self.speed
+
+        if(self.accumulated_dot >= 4):
+            self.accumulated_dot = 0
 
         for idx, query in enumerate(self.query_func.copy()):
             if query():
@@ -250,5 +258,7 @@ class WaitingNotification(NotificationBase):
         for button in self.buttons:
             button.draw_effect()
 
-        arcade.draw_text(self.message, SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 20, arcade.color.BLACK, 20,
+        add_dot = '.' * (int(self.accumulated_dot))
+
+        arcade.draw_text(self.message + add_dot, SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 20, arcade.color.BLACK, 20,
                          align="center", width=300,font_name=self.font)

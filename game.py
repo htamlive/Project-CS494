@@ -30,7 +30,7 @@ class MyGame(arcade.Window):
 
         self.proxy = Client('localhost', 4001)
 
-        self.waiting_notification = WaitingNotification("Some magic is happening...")
+        self.waiting_notification = WaitingNotification("Some magic is happening")
 
     def push_state(self, new_state):
         if(len(self.state_stack) > 0):
