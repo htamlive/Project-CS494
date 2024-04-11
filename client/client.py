@@ -39,6 +39,8 @@ class Client(Proxy):
         self._number_of_ready_players = 0
         self._number_of_players = 0
         self._remaining_players = 0
+        self._current_answer_result = None
+        self._current_player_list = []
 
         self.host = host
         self.port = port
@@ -143,7 +145,6 @@ class Client(Proxy):
         self.send_message(AnswerMessage(int(answer)))
 
     def check_result(self):
-        print("Checking result")
         if self._message_queue.empty():
             return Socket_return.IS_WAITING
         response = self.wait_for_message()
@@ -151,19 +152,29 @@ class Client(Proxy):
             case ServerMessage(DisqualifiedMessage()):
                 return Result.DISQUALIFIED
             case ServerMessage(TimeOutMessage()):
-                self._temp_msgs.append(response)
                 return Socket_return.IS_WAITING
             case ServerMessage(
-                ResultMessage(answer, is_correct, new_pos, remaining_players)
+                ResultMessage(player, answer, is_correct, new_pos, remaining_players)
             ):
-                match self._temp_msgs.pop(0):
-                    case ServerMessage(TimeOutMessage()):
-                        self._remaining_players = remaining_players
-                        if is_correct:
-                            self._position = new_pos
-                        return Result.CORRECT if is_correct else Result.INCORRECT
-                    case _:
-                        raise Exception("Unexpected message type %s", response)
+                self._temp_msgs.append(response)
+                self._remaining_players = remaining_players
+                if len(self._temp_msgs) == 1:
+                    self._current_player_list = []
+                self._current_player_list.append((player, new_pos))
+                if player == self._name:
+                    self._position = new_pos
+                    if is_correct:
+                        self._current_answer_result = Result.CORRECT
+                    elif not is_correct:
+                        self._current_answer_result = Result.INCORRECT
+                if remaining_players == len(self._temp_msgs):
+                    self._current_player_list.sort(key=lambda x: x[1])
+                    self._temp_msgs = []
+                    rs = self._current_answer_result
+                    self._current_answer_result = None
+                    return rs
+                else:
+                    return Socket_return.IS_WAITING
             case _:
                 raise Exception("Unexpected message type %s", response)
 
@@ -198,6 +209,9 @@ class Client(Proxy):
 
     def get_number_of_players(self):
         return self._number_of_players
+
+    def get_current_players_with_scores(self):
+        return self._current_player_list
 
     def get_number_of_ready_players(self):
         return self._number_of_ready_players

@@ -229,8 +229,9 @@ class AnswerMessage(Message):
 @dataclass
 class ResultMessage(Message):
     type = MessageType.RESULT
-    format = "<Bi?ii"
+    format = "<B6si?ii"
 
+    player_name: str
     answer: int
     is_correct: bool
     new_pos: int
@@ -243,6 +244,7 @@ class ResultMessage(Message):
         return struct.pack(
             self.format,
             self.type.value,
+            self.player_name.encode(),
             self.answer,
             self.is_correct,
             self.new_pos,
@@ -251,8 +253,11 @@ class ResultMessage(Message):
 
     @classmethod
     def unpack_data(cls, data):
-        _, answer, is_correct, new_pos, remain = struct.unpack(cls.format, data)
-        return cls(answer, is_correct, new_pos, remain)
+        _, player_name, answer, is_correct, new_pos, remain = struct.unpack(
+            cls.format, data
+        )
+        player_name = player_name.decode().rstrip("\x00")
+        return cls(player_name, answer, is_correct, new_pos, remain)
 
 
 @dataclass

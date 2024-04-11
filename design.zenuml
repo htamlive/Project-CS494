@@ -1,0 +1,102 @@
+@Actor "User"
+@Client "Client"
+@Server "Server"
+
+"User" -> "Client".Join {
+  while ("not success") {
+    // # Message format
+    // | 1 byte | 1 bytes | 10 bytes |
+    // |---------| -- | -- |
+    // | Type (=0x1) | Room | Name |
+    "Client" -> "Server".JOIN {
+      "Server"."Check name"
+      if (error) {
+        // # Message format
+        // | 1 byte |
+        // |---------|
+        // | Type (=0x2) |
+        @return "Server" -> "Client": JOIN_DENY
+      } else {
+        // # Message format
+        // | 1 byte | 1 byte |
+        // |---------| -- |
+        // | Type (=0x3) | ID |
+        @return "Server" -> "Client": JOIN_ACK
+      }
+    }    
+  }
+}
+
+// # Message format
+// | 1 byte | 1 byte | 1 byte |
+// |---------| -- | -- |
+// | ID | Type (=0x8) | State (0\|1)|
+
+"Client" -> "Server".READY {
+  "Server"."Update ready state"
+}
+
+while ("game not start") {
+  if ("player's ready state changed") {
+    // # Message format
+    // | 1 byte | 1 byte | 1 byte | 1 byte |
+    // | -- |---------| -- | -- |
+    // | ID | Type (=0xc) | Race length | Start position |
+    "Server" -> "Client": READY_CHG
+  }
+}
+
+if ("all player readied") {
+  // # Message format
+  // | 1 byte| 1 byte | 1 byte | 1 byte |
+  // | -- |---------| -- | -- |
+  // | ID | Type (=0x5) | Race length (3 ..= 26) | Start position |
+  "Server" -> "Client". START {
+// # Message format
+// | 1 byte | 1 byte | 2 bytes | 2 byte | 1 byte |
+// | -- |------| -- | -- | -- |
+// | ID | Type (=0x4) | 1st number | 2nd number | Ops |
+//
+// Ops := 
+// 0x1 (=addition)
+// | 0x2 (=subtract)
+// | 0x3 (=multiply)
+// | 0x4 (=division)
+"Server" -> "Client".QUESTION {
+  "Client" -> "User".Question {
+    if (timeout) {
+      // # Message format
+      // | 1 byte | 1 byte |
+      // | -- |---------|
+      // | ID | Type (=0x6) |
+      "Client" -> "Server": TIMEOUT
+    } else {
+      @return "User" -> "Client": Answer
+      // # Message format
+      // | 1 byte | 1 byte | 2 byte |
+      // | -- |---------| -- |
+      // | ID | Type (=0x7) | answer |
+      "Client" -> "Server".ANSWER {
+        Server."Check answer, update points and positions"
+        // # Message format
+        // | 1 byte| 1 byte | 2 byte | 1 byte | 1 byte |
+        // | -- |---------| -- | -- | -- |
+        // | ID | Type (=0xa) | answer | correct | new pos |
+      }
+    }
+        @return "Server" -> "Client": RESULT
+        if ("a player is eliminated") {
+          // NOTE: broardcast
+          // # Message format
+          // | 1 byte | 1 byte | 1 byte |
+          // | -- |---------| -- |
+          // | ID | Type (=0xb) | new player count |
+          "Server" -> "Client": PLAYER_ELIM
+        }
+  }
+}
+
+
+  }
+}
+  

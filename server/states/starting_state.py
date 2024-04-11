@@ -166,15 +166,17 @@ class StartingState(State):
         for address, player in self.context.current_game.players.items():
             is_correct = player.current_answer == correct_answer
             result_message = ResultMessage(
+                player.name,
                 correct_answer,
                 is_correct,
                 player.position,
                 len(self.context.current_game.players),
             )
-            player.client_socket.send(result_message.pack())
 
-            print("Sent result message:", result_message.__dict__)
-            print("To player:", player.name)
+            for address, player in self.context.current_game.players.items():
+                player.client_socket.send(result_message.pack())
+                print("Sent result message:", result_message.__dict__)
+                print("To player:", player.name)
 
         # Check if all players are disqualified
         if len(self.context.current_game.players) == 0:
@@ -184,24 +186,22 @@ class StartingState(State):
 
             return
 
-        # Check for winner
         winner = self._find_winner()
         if winner is not None:
             print("Winner:", winner.name)
             # Broadcast the winner message to all players
             for address, player in self.context.players.items():
                 print(
-                    player.client_socket.sendall(
-                        WinnerMessage(True, winner.name).pack()
-                    )
+                    player.client_socket.send(WinnerMessage(True, winner.name).pack())
                 )
 
             # End the game
             self.context.transition_to(waiting_state.WaitingState())
             self.context.current_game = None
         else:
+            print("No winner yet.")
             for address, player in self.context.players.items():
-                print(player.client_socket.sendall(WinnerMessage(False, "").pack()))
+                print(player.client_socket.send(WinnerMessage(False, "").pack()))
             # Start next round
             self.context.current_game.remaining_time = -1
 
