@@ -229,24 +229,30 @@ class AnswerMessage(Message):
 @dataclass
 class ResultMessage(Message):
     type = MessageType.RESULT
-    format = "<Bi?i"
+    format = "<Bi?ii"
 
     answer: int
     is_correct: bool
     new_pos: int
+    remain_players: int
 
     def __post_init__(self):
         super().__init__()
 
     def pack(self):
         return struct.pack(
-            self.format, self.type.value, self.answer, self.is_correct, self.new_pos
+            self.format,
+            self.type.value,
+            self.answer,
+            self.is_correct,
+            self.new_pos,
+            self.remain_players,
         )
 
     @classmethod
     def unpack_data(cls, data):
-        _, answer, is_correct, new_pos = struct.unpack(cls.format, data)
-        return cls(answer, is_correct, new_pos)
+        _, answer, is_correct, new_pos, remain = struct.unpack(cls.format, data)
+        return cls(answer, is_correct, new_pos, remain)
 
 
 @dataclass

@@ -39,6 +39,7 @@ class Client(Proxy):
         self._name = ""
         self._number_of_ready_players = 0
         self._number_of_players = 0
+        self._remaining_players = 0
 
         self.host = host
         self.port = port
@@ -151,9 +152,12 @@ class Client(Proxy):
             case ServerMessage(TimeOutMessage()):
                 self._temp_msgs.append(response)
                 return Socket_return.IS_WAITING
-            case ServerMessage(ResultMessage(answer, is_correct, new_pos)):
+            case ServerMessage(
+                ResultMessage(answer, is_correct, new_pos, remaining_players)
+            ):
                 match self._temp_msgs.pop(0):
                     case ServerMessage(TimeOutMessage()):
+                        self._remaining_players = remaining_players
                         if is_correct:
                             self._position = new_pos
                         return Result.CORRECT if is_correct else Result.INCORRECT
@@ -196,6 +200,9 @@ class Client(Proxy):
 
     def get_number_of_ready_players(self):
         return self._number_of_ready_players
+
+    def get_number_of_players_in_game(self):
+        return self._remaining_players
 
     def check_winner(self):
         print("Checking winner")
