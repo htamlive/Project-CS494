@@ -170,20 +170,28 @@ class Proxy:
         ]
     
     def get_number_of_players(self):
+        '''
+        Return the number of players in the waiting room
+        '''
         return 3
     
     def get_number_of_ready_players(self):
+        '''
+        Return the number of players who are ready in the waiting room
+        '''
         return 3
     
     def get_number_of_players_in_game(self):
+        '''
+        return the number of players currently in the game
+        '''
         return 3
     
     def check_winner(self):
         '''
-        Use for lost players
+        This will be called if check_result does not return DISQUALIFIED
 
-        + None
-        + Player 1
+        return the winner name
 
         '''
         return 'Player 1'
@@ -194,22 +202,7 @@ class Proxy:
 
         This function will update score
 
-        return the result, which is the enum of Result if the server approves the UI to update and show the result and the score
-        Otherwise, return None
-
-        Return None, None
-
-        correct
-        incorrect
-
-        Leaderboard
-        Your score: 1/100
-
-        Player 1
-
-        self.score = ...
-        self.winner = ...
-
+        return the result, which is the enum of Result 
         '''
         result = self.result
         self.result = None
