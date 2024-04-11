@@ -5,26 +5,31 @@ DEFAULT_TIME = 5
 
 from enum import Enum
 
+
 class Mode(Enum):
     TRADITIONAL = 1
     BLITZ = 2
 
+
 class Operator(Enum):
-    ADD = '+'
-    SUBTRACT = '-'
-    MULTIPLY = '*'
-    DIVIDE = '/'
-    MOD = '%'
+    ADD = "+"
+    SUBTRACT = "-"
+    MULTIPLY = "*"
+    DIVIDE = "/"
+    MOD = "%"
+
 
 class Result(Enum):
-    CORRECT = 'Correct'
-    INCORRECT = 'Incorrect'
-    DISQUALIFIED = 'Disqualified'
+    CORRECT = "Correct"
+    INCORRECT = "Incorrect"
+    DISQUALIFIED = "Disqualified"
+
 
 class Summary_type(Enum):
-    WINNER = 'Winner'
+    WINNER = "Winner"
 
-    DISQUALIFIED = 'Disqualified' # Use for consistent in the SummaryState
+    DISQUALIFIED = "Disqualified"  # Use for consistent in the SummaryState
+
 
 class Socket_return(Enum):
-    IS_WAITING = 'is_waiting'
+    IS_WAITING = "is_waiting"
