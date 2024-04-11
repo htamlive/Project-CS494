@@ -165,7 +165,12 @@ class StartingState(State):
         # Announce results
         for address, player in self.context.current_game.players.items():
             is_correct = player.current_answer == correct_answer
-            result_message = ResultMessage(correct_answer, is_correct, player.position)
+            result_message = ResultMessage(
+                correct_answer,
+                is_correct,
+                player.position,
+                len(self.context.current_game.players),
+            )
             player.client_socket.send(result_message.pack())
 
             print("Sent result message:", result_message.__dict__)
