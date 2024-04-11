@@ -329,6 +329,14 @@ class GamePlayState(State):
         self.timeleft = self.game.proxy.get_time_left()
         self.ui_manager.on_update(delta_time)
 
+        self.check_input()
+
+    def check_input(self):
+        current_input = self.input_box.text
+        #remove all characters that are not digits
+        current_input = ''.join([char for char in current_input if char.isdigit()])
+        self.input_box.text = current_input
+
 
     def on_key_release(self, symbol: int, modifiers: int):
         self.ui_manager.on_key_release(symbol, modifiers)

@@ -117,6 +117,15 @@ class WaitingRoomState(State):
         if(self.game.proxy.is_game_started()):
             self.game.push_state(GamePlayState(self.game, self.game.proxy.get_mode()))
 
+        if(len(self.players) == 0):
+            self.buttons[-1].set_enabled(False, False)
+            self.buttons[-2].set_enabled(False, False)
+        else:
+            enable_left = self.current_page > 0
+            enable_right = (self.current_page + 1) * self.player_per_page < len(self.players)
+            self.buttons[-2].set_enabled(enable_left, enable_left)
+            self.buttons[-1].set_enabled(enable_right, enable_right)
+
             
     def request_current_players_in_room(self):
         players = self.game.proxy.get_current_players()

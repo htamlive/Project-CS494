@@ -23,7 +23,7 @@ class ImageButton(arcade.Sprite):
     def on_mouse_motion(self, x, y, dx, dy):
         self.prev_mouse_position = [x, y]
 
-        if self.left <= x <= self.right and self.bottom <= y <= self.top:
+        if self.left <= x <= self.right and self.bottom <= y <= self.top and self.is_enabled:
             self.is_hover = True
         else:
             self.is_hover = False

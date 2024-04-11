@@ -26,12 +26,16 @@ class ChooseModeState(State):
 
         self.mode = Mode.TRADITIONAL
 
+
+        self.init_pop_up_box()
+
         traditional_button.on_click = lambda : self.set_mode(Mode.TRADITIONAL)
-        blitz_button.on_click = lambda : self.set_mode(Mode.BLITZ)
+        # blitz_button.on_click = lambda : self.set_mode(Mode.BLITZ)
+        blitz_button.on_click = lambda : self.game.show_popup('blitz notification')
 
         self.buttons.extend([traditional_button, blitz_button])
 
-        self.init_result_box()
+        
 
 
         def on_ok():
@@ -74,7 +78,13 @@ class ChooseModeState(State):
 
         self.game.popups['input name'] = self.input_popup
 
-    def init_result_box(self):
+    def init_pop_up_box(self):
+
+        self.blitz_notification = OKNotification("Blitz mode is not available yet", on_ok = lambda: self.game.turn_off_notification('blitz notification'))
+
+        self.game.popups['blitz notification'] = self.blitz_notification
+        
+    
         def on_ok():
             self.game.push_state(WaitingRoomState(self.game, self.mode))
             self.game.turn_off_notification('Registration notification')
