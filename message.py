@@ -49,7 +49,7 @@ class Message:
 @dataclass
 class JoinMessage(Message):
     type = MessageType.JOIN
-    format = "<BI6s"
+    format = "<BI10s"
 
     room: int
     name: str
@@ -232,7 +232,7 @@ class AnswerMessage(Message):
 @dataclass
 class ResultMessage(Message):
     type = MessageType.RESULT
-    format = "<B6si?ii"
+    format = "<B10si?ii"
 
     player_name: str
     answer: int
@@ -266,7 +266,7 @@ class ResultMessage(Message):
 @dataclass
 class WinnerMessage(Message):
     type = MessageType.WINNER
-    format = "<B?6s"
+    format = "<B?10s"
 
     have_winner: bool
     name: str
