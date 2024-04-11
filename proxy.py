@@ -162,7 +162,11 @@ class Proxy:
         return [
             ('Player 1', 4),
             ('Player 2', 2),
-            ('Player 3', 1),
+            ('Player 3', 2),
+            ('Player 4', 1),
+            ('Player 5', 1),
+            ('Player 6', 0)
+
         ]
     
     def get_number_of_players(self):

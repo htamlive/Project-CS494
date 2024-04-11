@@ -63,14 +63,15 @@ class SummaryState(State):
             arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT//2 - 40 -10, 
                                              self.your_score_title, 0.6)
         
-            arcade.draw_text(str(self.score), SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT//2 - 120, arcade.color.ORANGE_RED, 40, font_name=self.font2, align="center", width=100)
+            arcade.draw_text(str(self.score), SCREEN_WIDTH // 2 + 50, SCREEN_HEIGHT//2 - 43 - 20, arcade.color.ORANGE_RED, 28, font_name=self.font2, align="center", width=100)
            
 
-            arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT//2 - 43 - 10,
+            # SCREEN_HEIGHT//2 - 43 - 10
+            arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2 - 100 + 20, SCREEN_HEIGHT//2 - 120 + 10,
                                                 self.top_title, 0.6)
         
 
-            arcade.draw_text(str(self.get_top()), SCREEN_WIDTH // 2 + 50, SCREEN_HEIGHT//2 - 120, arcade.color.VIVID_VIOLET, 40, font_name=self.font2, align="center", width=100)
+            arcade.draw_text(str(self.get_top()), SCREEN_WIDTH // 2 + 50, SCREEN_HEIGHT//2 - 120, arcade.color.VIVID_VIOLET, 28, font_name=self.font2, align="center", width=100)
         
         elif(self.type_of_summary == Summary_type.DISQUALIFIED):
             arcade.draw_text("DISQUALIFIED", SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT//2 + 10, arcade.color.RED, 40, font_name=self.font2, align="center", width=200)

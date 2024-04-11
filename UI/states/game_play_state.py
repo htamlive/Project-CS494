@@ -5,6 +5,7 @@ from .state import State
 from .summary_state import SummaryState
 from ..buttons import ImageButton, HoverLineButton
 from ..alert_notification import AlertNotification
+from ..leaderboard import Leaderboard
 from config.config import *
 import random
 from enum import Enum
@@ -20,7 +21,7 @@ class GamePlayState(State):
         self.quest_title = arcade.load_texture("resources/images/questTitle.png")
         self.time_title = arcade.load_texture("resources/images/timeTitle.png")
         self.score_title = arcade.load_texture("resources/images/scoreTitle.png")
-        self.leaderboard_title = arcade.load_texture("resources/images/leaderboardTitle.png")
+        
 
 
         self.submission_box = arcade.load_texture("resources/images/submissionBox.png")
@@ -34,6 +35,7 @@ class GamePlayState(State):
         }
 
         self.result = None
+        self.number_of_players = None
         self.current_score = 0
         self.timeleft = self.init_time()
         self.players_info = []
@@ -101,7 +103,12 @@ class GamePlayState(State):
 
         self.next_button.set_enabled(False, False)
 
+        
+
+        self.leaderboard = Leaderboard(self.game.proxy)
+
         self.buttons.extend([self.go_button, leave_button, self.next_button])
+        self.buttons.extend(self.leaderboard.buttons)
 
 
     def init_input_box(self):
@@ -123,6 +130,7 @@ class GamePlayState(State):
             ret = self.game.proxy.request_racing_length()
             if ret != Socket_return.IS_WAITING:
                 self.racing_length = ret
+                self.leaderboard.racing_length = ret
                 return True
             return False
         
@@ -188,7 +196,7 @@ class GamePlayState(State):
 
     def update_score(self):
         if self.result == Result.CORRECT:
-            self.current_score += self.game.proxy.get_score()
+            self.current_score += self.game.proxy.get_user_score()
 
     def on_next_quest(self):
         if(self.next_button.is_enabled and self.next_button.visible):
@@ -208,10 +216,6 @@ class GamePlayState(State):
             self.game.waiting_notification.add_query(query_func)
             
 
-            
-    def get_current_players_with_scores(self):
-
-        return self.game.proxy.get_current_players_with_scores()
         
     def format_number(self, number : int) -> str:
         # format number with commas
@@ -237,12 +241,6 @@ class GamePlayState(State):
         arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 30, 
                                              texture_operator, scale=0.8)
             
-
-    def draw_leaderboard(self):
-        for idx, (player_name, score) in enumerate(self.players_info):
-            arcade.draw_text(player_name, SCREEN_WIDTH - 240, SCREEN_HEIGHT - 300 - idx * 40, arcade.color.BLACK, 20, font_name=self.font, align="right", width=100)
-            arcade.draw_text(f'{str(score)}/{self.racing_length}', SCREEN_WIDTH - 100, SCREEN_HEIGHT - 300 - idx * 40, arcade.color.BLACK, 20, font_name=self.font)
-
     def draw(self):
         super().draw()
         arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT//2 + 150, 
@@ -254,8 +252,6 @@ class GamePlayState(State):
         arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH - 140, SCREEN_HEIGHT//2 + 200,
                                                 self.score_title, 0.5)
         
-        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH - 140, SCREEN_HEIGHT//2 + 80,
-                                                self.leaderboard_title,)
         
         arcade.draw_scaled_texture_rectangle(150, SCREEN_HEIGHT//2 + 200,
                                                 self.time_title, 0.5)
@@ -269,7 +265,7 @@ class GamePlayState(State):
 
         self.ui_manager.draw()
 
-        self.draw_leaderboard()
+        self.leaderboard.draw()
 
         if(self.result):
             arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 80, 
@@ -280,6 +276,11 @@ class GamePlayState(State):
         
         arcade.draw_text(self.format_time(self.timeleft), 95, SCREEN_HEIGHT//2 + 130, 
                              arcade.color.BLACK, 30, font_name=self.font, align="center", width=100)
+        
+        if(self.number_of_players is not None):
+            arcade.draw_text(f"# players left", SCREEN_WIDTH - 200, SCREEN_HEIGHT - 80, arcade.color.BLACK, 16, font_name=self.font)
+            arcade.draw_text(f"{self.number_of_players}", SCREEN_WIDTH - 60, SCREEN_HEIGHT - 80, arcade.color.ORANGE_RED, 24, font_name=self.font)
+
         
         # for idx, player in enumerate(self.players):
         #     arcade.draw_text(player, SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2 + 80 - idx * 40, 
@@ -298,15 +299,18 @@ class GamePlayState(State):
         self.game.popups['leave game room'] = self.leave_waiting_room_popup
 
 
-    def update_leaderboard(self):
-        players = self.get_current_players_with_scores()
-        if players != Socket_return.IS_WAITING:
-            self.players_info = sorted(players, key=lambda x: x[1], reverse=True)[:3]
+    def update_number_players(self):
+        number_of_players = self.game.proxy.get_number_of_players_in_game()
+        if number_of_players != Socket_return.IS_WAITING:
+            self.number_of_players = number_of_players
+
+
 
     def on_update(self, delta_time):
         super().on_update(delta_time)
         self.update_time(delta_time)
-        self.update_leaderboard()
+        self.leaderboard.update(delta_time)
+        self.update_number_players()
         self.timeleft = self.game.proxy.get_time_left()
         self.ui_manager.on_update(delta_time)
 
@@ -318,6 +322,7 @@ class GamePlayState(State):
         super().on_draw()
         self.ui_manager.on_draw()
 
+        
     def on_mouse_press(self, x, y, button, modifiers):
         super().on_mouse_press(x, y, button, modifiers)
         self.ui_manager.on_mouse_press(x, y, button, modifiers)
