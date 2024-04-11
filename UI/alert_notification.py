@@ -222,6 +222,10 @@ class WaitingNotification(NotificationBase):
 
         self.query_func = []
 
+        arcade.load_font("resources/fonts/UTM ANDROGYNE.TTF")
+        arcade.load_font("resources/fonts/PaytoneOne-Regular.ttf")
+        self.font = "Paytone One"
+
     def add_query(self, query_func):
         self.query_func.append(query_func)
 
@@ -233,7 +237,7 @@ class WaitingNotification(NotificationBase):
             if query():
                 self.query_func[idx] = None
 
-        self.query_func = [query for query in self.query_func if query]
+        self.query_func = [query for query in self.query_func if query is not None]
 
 
     def draw(self):
@@ -246,5 +250,5 @@ class WaitingNotification(NotificationBase):
         for button in self.buttons:
             button.draw_effect()
 
-        arcade.draw_text(self.message, SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 50, arcade.color.BLACK, 20,
-                         align="center", width=300)
+        arcade.draw_text(self.message, SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 20, arcade.color.BLACK, 20,
+                         align="center", width=300,font_name=self.font)

@@ -72,10 +72,11 @@ class MyGame(arcade.Window):
 
         arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH - 150, 150, self.white_wizard, 0.5)
 
-        
 
         if(self.current_state):
             self.current_state.draw()
+
+        self.waiting_notification.draw()
 
         for box in self.popups.copy().values():
             box.draw()

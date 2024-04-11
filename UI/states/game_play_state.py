@@ -169,6 +169,7 @@ class GamePlayState(State):
         def query_func_winner():
             winner = self.game.proxy.check_winner()
             if winner != Socket_return.IS_WAITING:
+                
                 if winner != None:
                     self.game.push_state(SummaryState(self.game, self.mode, self.current_score, Summary_type.WINNER, winner))
                 return True
@@ -253,7 +254,7 @@ class GamePlayState(State):
                                              self.mode_label, 0.5)
         
         arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH - 140, SCREEN_HEIGHT//2 + 180,
-                                                self.score_title, 0.5)
+                                                self.score_title, 0.3)
         
         
         arcade.draw_scaled_texture_rectangle(150, SCREEN_HEIGHT//2 + 200,
@@ -274,8 +275,8 @@ class GamePlayState(State):
             arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 80, 
                                                  self.results[self.result], 0.7)
         
-        arcade.draw_text(f'{str(self.current_score)}/{self.racing_length}', SCREEN_WIDTH - 200, SCREEN_HEIGHT//2 + 120, 
-                             arcade.color.BLACK, 28, font_name=self.font, align="center", width=100)
+        arcade.draw_text(f'{str(self.current_score)}/{self.racing_length}', SCREEN_WIDTH - 200 + 10, SCREEN_HEIGHT//2 + 120 + 10, 
+                             arcade.color.BLACK, 20, font_name=self.font, align="center", width=100)
         
         arcade.draw_text(self.format_time(self.timeleft), 95, SCREEN_HEIGHT//2 + 130, 
                              arcade.color.BLACK, 30, font_name=self.font, align="center", width=100)
