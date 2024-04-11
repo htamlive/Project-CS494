@@ -114,9 +114,10 @@ class StartingState(State):
                 raise ValueError("Invalid operation.")
 
         for address, player in self.context.players.items():
+            player.score = 0
             if player.current_answer is None:
                 # Player didn't answer, assign -1 point
-                player.score -= 1
+                player.score = -1
                 total_points_lost += 1
                 player.nums_of_wrong_answers += 1
             else:
@@ -130,13 +131,13 @@ class StartingState(State):
                         fastest_time = player.answer_time
 
                     player.nums_of_wrong_answers = 0
-                    player.score += 1
+                    player.score = 1
                 else:
                     print("Player answered incorrectly.")
                     print("Player:", player.name)
 
                     # Wrong answer
-                    player.score -= 1
+                    player.score = -1
                     total_points_lost += 1
                     player.nums_of_wrong_answers += 1
 
