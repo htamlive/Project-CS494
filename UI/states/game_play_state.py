@@ -175,7 +175,7 @@ class GamePlayState(State):
                 if winner != None:
                     self.game.push_state(SummaryState(self.game, self.mode, self.current_score, Summary_type.WINNER, winner))
                 else:
-                    self.game.waiting_notification.add_query(self.request_next_quest)
+                    self.request_next_quest()
                 return True
             return False
 
