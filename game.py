@@ -3,6 +3,7 @@ from UI.states.menu_state import MenuState
 from config.config import *
 from UI.alert_notification import WaitingNotification
 from proxy import Proxy
+from client import Client
 
 class MyGame(arcade.Window):
     def __init__(self):
@@ -27,7 +28,7 @@ class MyGame(arcade.Window):
 
         self.push_state(self.menu_state)
 
-        self.proxy = Proxy()
+        self.proxy = Client('localhost', 4001)
 
         self.waiting_notification = WaitingNotification("Some magic is happening...")
 
