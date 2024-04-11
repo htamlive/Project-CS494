@@ -4,9 +4,8 @@ from .config import NUMS_OF_QUESTIONS
 
 
 class Game:
-    def __init__(self, race_length, players):
+    def __init__(self, race_length):
         self.race_length = race_length
-        self.players = players
         self.current_index = -1
         self.question = []
         self.remaining_time = -1

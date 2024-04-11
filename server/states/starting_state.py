@@ -27,11 +27,11 @@ class StartingState(State):
         if self.context.current_game.remaining_time == -1:
             return
 
-        if client_address not in self.context.current_game.players:
+        if client_address not in self.context.players:
             return
 
         answer = message.answer
-        player = self.context.current_game.players[client_address]
+        player = self.context.players[client_address]
         player.current_answer = answer
         player.answer_time = time.time_ns()
 
@@ -40,11 +40,11 @@ class StartingState(State):
             raise Exception("Game is not initialized.")
         if any(
             player.position >= self.context.current_game.race_length
-            for player in self.context.current_game.players.values()
+            for player in self.context.players.values()
         ):
             # Announce winner
             winner = max(
-                self.context.current_game.players.values(),
+                self.context.players.values(),
                 key=lambda x: x.position,
             )
             return winner
@@ -57,12 +57,12 @@ class StartingState(State):
         self.context.current_game.current_index += 1
 
         # Reset answers
-        for player in self.context.current_game.players.values():
+        for player in self.context.players.values():
             player.current_answer = None
             player.answer_time = None
 
         # Broadcast the question to all players
-        for address, player in self.context.current_game.players.items():
+        for address, player in self.context.players.items():
             player.client_socket.send(
                 self.context.current_game.question[
                     self.context.current_game.current_index
@@ -84,7 +84,7 @@ class StartingState(State):
             raise ValueError("Game is not initialized.")
 
         # Broadcast the time out message to all players
-        for address, player in self.context.current_game.players.items():
+        for address, player in self.context.players.items():
             player.client_socket.send(TimeOutMessage().pack())
             print("Sent time out message.")
 
@@ -113,7 +113,7 @@ class StartingState(State):
             case _:
                 raise ValueError("Invalid operation.")
 
-        for address, player in self.context.current_game.players.items():
+        for address, player in self.context.players.items():
             if player.current_answer is None:
                 # Player didn't answer, assign -1 point
                 player.score -= 1
@@ -149,41 +149,41 @@ class StartingState(State):
             # Broadcast to the disqualified player
             disqualified_player.client_socket.send(DisqualifiedMessage().pack())
 
-            del self.context.current_game.players[disqualified_player.client_address]
+            del self.context.players[disqualified_player.client_address]
 
         # Update score for fastest player
-        for player in self.context.current_game.players.values():
+        for player in self.context.players.values():
             if player == fastest_player:
                 player.score += total_points_lost
 
         # Update positions
-        for player in self.context.current_game.players.values():
+        for player in self.context.players.values():
             player.position += player.score
             if player.position < 1:
                 player.position = 1
 
         # Announce results
-        for address, player in self.context.current_game.players.items():
+        for address, player in self.context.players.items():
             is_correct = player.current_answer == correct_answer
             result_message = ResultMessage(
                 player.name,
                 correct_answer,
                 is_correct,
                 player.position,
-                len(self.context.current_game.players),
+                len(self.context.players),
             )
 
-            for address, player in self.context.current_game.players.items():
+            for address, player in self.context.players.items():
                 player.client_socket.send(result_message.pack())
                 print("Sent result message:", result_message.__dict__)
                 print("To player:", player.name)
 
         # Check if all players are disqualified
-        if len(self.context.current_game.players) == 0:
+        if len(self.context.players) == 0:
             # End the game
-            self.context.transition_to(waiting_state.WaitingState())
             self.context.current_game = None
-
+            self.context.players.clear()
+            self.context.transition_to(waiting_state.WaitingState())
             return
 
         winner = self._find_winner()
@@ -196,8 +196,9 @@ class StartingState(State):
                 )
 
             # End the game
-            self.context.transition_to(waiting_state.WaitingState())
             self.context.current_game = None
+            self.context.players.clear()
+            self.context.transition_to(waiting_state.WaitingState())
         else:
             print("No winner yet.")
             for address, player in self.context.players.items():
@@ -208,7 +209,7 @@ class StartingState(State):
     def _handle_tick(self):
         if self.context.current_game is None:
             # Create a new game
-            self.context.current_game = Game(RACE_LENGTH, self.context.players)
+            self.context.current_game = Game(RACE_LENGTH)
             self.context.current_game.new_question_list()
             self.context.current_game.remaining_time = -1
             self.context.current_game.current_index = -1
@@ -223,7 +224,7 @@ class StartingState(State):
 
             if self.context.current_game.remaining_time == 0 or all(
                 player.current_answer is not None
-                for player in self.context.current_game.players.values()
+                for player in self.context.players.values()
             ):
                 self._end_round()
 
@@ -234,8 +235,8 @@ class StartingState(State):
         if client_address in self.context.players:
             del self.context.players[client_address]
 
-        if client_address in self.context.current_game.players:
-            del self.context.current_game.players[client_address]
+        if client_address in self.context.players:
+            del self.context.players[client_address]
 
         # # Broadcast the player disconnected message to all players
         # for address, player in self.context.players.items():

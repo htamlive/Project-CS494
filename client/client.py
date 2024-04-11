@@ -50,6 +50,17 @@ class Client(Proxy):
         self._temp_msgs = []
         logger.info("Client initialized")
 
+    def _reset(self):
+        self._position = 1
+        self._race_length = 0
+        self._name = ""
+        self._number_of_ready_players = 0
+        self._number_of_players = 0
+        self._remaining_players = 0
+        self._current_answer_result = None
+        self._players_in_waiting_room = []
+        self._current_player_list = []
+
     def receive_message(self):
         return self.receiver.receive_message()
 
@@ -91,6 +102,7 @@ class Client(Proxy):
     # ================== Proxy methods ================== #
 
     def register(self, name, mode):
+        self._reset()
         self.send_message(JoinMessage(0, name))
         rs = self.wait_for_message()
         match rs:
