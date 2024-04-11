@@ -40,7 +40,7 @@ class GamePlayState(State):
 
         self.result = None
         self.number_of_players = None
-        self.current_score = 0
+        self.current_score = self.game.proxy.get_user_score(None)
         self.timeleft = self.init_time()
         self.players_info = []
 
@@ -106,8 +106,6 @@ class GamePlayState(State):
         
 
         self.next_button.set_enabled(False, False)
-
-        
 
         self.leaderboard = Leaderboard(self.game.proxy)
 
@@ -207,8 +205,7 @@ class GamePlayState(State):
     
 
     def update_score(self):
-        if self.result == Result.CORRECT:
-            self.current_score += self.game.proxy.get_user_score(None)
+        self.current_score = self.game.proxy.get_user_score(None)
 
     def request_next_quest(self):
         def query_func():
