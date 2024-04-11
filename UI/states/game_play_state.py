@@ -15,7 +15,8 @@ class GamePlayState(State):
     def __init__(self, game, mode):
         super().__init__(game)
 
-        self.history = [self.gen_quest()]
+        self.history = []
+        
         
         
         self.quest_title = arcade.load_texture("resources/images/questTitle.png")
@@ -112,6 +113,8 @@ class GamePlayState(State):
 
         self.buttons.extend([self.go_button, leave_button, self.next_button])
         self.buttons.extend(self.leaderboard.buttons)
+
+        self.request_next_quest()
 
 
     def init_input_box(self):
@@ -211,6 +214,7 @@ class GamePlayState(State):
         def query_func():
             ret = self.gen_quest()
             if ret != Socket_return.IS_WAITING:
+            
                 self.history.append(ret)
                 self.result = None
                 self.next_button.set_enabled(False, False)
@@ -241,6 +245,9 @@ class GamePlayState(State):
         return f"{minutes:02}:{seconds:02}"
     
     def draw_quest(self):
+
+        if(len(self.history) == 0):
+            return
         operand1, operator, operand2, _ = self.history[-1]
 
         texture_operator = self.operators[operator]
