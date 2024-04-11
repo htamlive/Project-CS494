@@ -14,14 +14,20 @@ class NotificationBase:
             button.set_enabled(enabled)
 
     def on_update(self, delta_time):
+        if(not self.enabled):
+            return
         for button in self.buttons:
             button.on_update(delta_time)
 
     def on_mouse_motion(self, x, y, dx, dy):
+        if(not self.enabled):
+            return
         for button in self.buttons:
             button.on_mouse_motion(x, y, dx, dy)
 
     def on_mouse_press(self, x, y, button, modifiers):
+        if(not self.enabled):
+            return
         for button in self.buttons:
             button.on_mouse_press(x, y, button, modifiers)
 
