@@ -143,6 +143,7 @@ class InputPopup(NotificationBase):
 
         self.ui_manager.add(self.input_box)
 
+
     def init_input_box(self):
         return UIInputText(
             x = SCREEN_WIDTH // 2 - 150,

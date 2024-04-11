@@ -45,6 +45,7 @@ class GamePlayState(State):
         self.players_info = []
 
         self.request_racing_length()
+        self.update_number_players()
 
         self.operators = {
             Operator.ADD: arcade.load_texture("resources/images/operators/addOperator.png"),
@@ -319,8 +320,6 @@ class GamePlayState(State):
         number_of_players = self.game.proxy.get_number_of_players_in_game()
         if number_of_players != Socket_return.IS_WAITING:
             self.number_of_players = number_of_players
-
-
 
     def on_update(self, delta_time):
         super().on_update(delta_time)

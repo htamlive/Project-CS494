@@ -35,8 +35,19 @@ class ChooseModeState(State):
 
 
         def on_ok():
+            current_text = self.input_popup.get_current_text()
+            if current_text == '':
+                self.input_popup.show_noti("Name cannot be empty", arcade.color.RED)
+                return
+            
+            if not current_text.lower().isalnum() or len(current_text) > 10:
+                self.input_popup.show_noti("Invalid name", arcade.color.RED)
+                return
+            
             def query_func():
                 current_text = self.input_popup.get_current_text()
+
+
                 ret = self.register_with_name(current_text)
 
                 if ret != Socket_return.IS_WAITING:
