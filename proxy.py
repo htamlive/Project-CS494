@@ -27,7 +27,7 @@ class Proxy:
         self.score = 0
 
         self.result = None
-        self.user_name = ""
+        self._name = ""
 
     def on_update(self, delta_time):
         """
@@ -35,17 +35,21 @@ class Proxy:
         """
         self.dummy_test_time += delta_time
 
+    @property
+    def name(self):
+        return self._name
+
     def register(self, name, mode):
         """
         If correct, please register the user to the game
         The player will be in ready state
         """
-        self.user_name = name
+        self._name = name
         self.current_mode = mode
         return True
 
     def get_user_name(self):
-        return self.user_name
+        return self._name
 
     def get_current_players(self):
         """

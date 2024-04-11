@@ -63,7 +63,7 @@ class SummaryState(State):
         
         if(self.type_of_summary == Summary_type.WINNER):
 
-            user_name = self.game.proxy.get_user_name()
+            user_name = self.game.proxy.name
             if(user_name == self.winner_name):
                 arcade.draw_text("You are", SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT//2 + 100, arcade.color.BLACK, 12, font_name=self.font2, align="center", width=200)
 
