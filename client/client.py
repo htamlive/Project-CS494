@@ -188,6 +188,7 @@ class Client(Proxy):
                 if len(self._temp_msgs) == 1:
                     self._current_player_list = []
                 self._current_player_list.append((player, new_pos))
+                self._current_player_list.sort(key=lambda x: x[1])
                 if player == self._name:
                     self._position = new_pos
                     if is_correct:
@@ -219,7 +220,7 @@ class Client(Proxy):
         self.send_message(DisconnectMessage())
 
     def get_user_top(self):
-        return self._current_player_list[0][1]
+        return max([player[1] for player in self._current_player_list])
 
     def request_racing_length(self):
         return self._race_length
