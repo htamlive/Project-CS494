@@ -22,6 +22,7 @@ class WaitingState(State):
 
     def _handle_join(self, message: JoinMessage, client_socket, client_address) -> None:
         print("Join message:", repr(message))
+        print("Current players:", self.context.players)
 
         player_name = message.name
         if len(self.context.players) == MAX_PLAYERS or any(
