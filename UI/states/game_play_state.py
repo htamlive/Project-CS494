@@ -187,7 +187,7 @@ class GamePlayState(State):
                     self.result = result
                     self.update_score()
                     self.game.waiting_notification.add_query(query_func_winner)
-                    self.next_button.set_enabled(True, True)
+                    # self.next_button.set_enabled(True, True)
 
                 return True
 
@@ -199,7 +199,7 @@ class GamePlayState(State):
 
     def update_score(self):
         if self.result == Result.CORRECT:
-            self.current_score += self.game.proxy.get_user_score()
+            self.current_score += self.game.proxy.get_user_score(None)
 
     def on_next_quest(self):
         if(self.next_button.is_enabled and self.next_button.visible):
@@ -211,7 +211,7 @@ class GamePlayState(State):
                     self.next_button.set_enabled(False, False)
                     self.renew_input_box()
                     self.go_button.set_enabled(True, True)
-                    self.next_button.set_enabled(False, False)
+                    # self.next_button.set_enabled(False, False)
                     return True
                 
                 return False

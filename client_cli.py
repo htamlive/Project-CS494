@@ -22,4 +22,4 @@ if __name__ == "__main__":
         operand1, operator, operand2, _ = client.gen_quest()
         print(f"Question: {operand1} {operator} {operand2}")
         answer = int(input("Your answer: "))
-        client.check_answer(answer, None)
+        client.submit_answer(answer, None)

@@ -118,7 +118,10 @@ class Client(Proxy):
                     case 0x4:
                         operation = Operator.DIVIDE
                 return first_number, operation, second_number, None
-
+            
+        return Socket_return.IS_WAITING
+            
+        
     def on_ready(self):
         self.send_message(message=ReadyMessage(True))
 
