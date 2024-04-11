@@ -11,17 +11,21 @@ class Leaderboard:
         self.proxy = proxy
 
         self.leaderboard_title = arcade.load_texture("resources/images/leaderboardTitle.png")
-        self.font = arcade.load_font("resources/fonts/PaytoneOne-Regular.ttf")
+        arcade.load_font("resources/fonts/PaytoneOne-Regular.ttf")
 
-        left_arrow_button = HoverLineButton("resources/images/leftArrow.png", 0.25)
+        self.font = "Paytone One"
+
+        left_arrow_button = HoverLineButton("resources/images/leftArrow.png", 0.15)
         left_arrow_button.click_scale_factor = 0.3
         left_arrow_button.center_x = SCREEN_WIDTH - 200
-        left_arrow_button.center_y = SCREEN_HEIGHT//2 - 80
+        left_arrow_button.center_y = SCREEN_HEIGHT//2 - 80 + 10
+        left_arrow_button.hovered_line_speed = 5
 
-        right_arrow_button = HoverLineButton("resources/images/rightArrow.png", 0.25)
+        right_arrow_button = HoverLineButton("resources/images/rightArrow.png", 0.15)
         right_arrow_button.click_scale_factor = 0.3
         right_arrow_button.center_x = SCREEN_WIDTH - 60
-        right_arrow_button.center_y = SCREEN_HEIGHT//2 - 80
+        right_arrow_button.center_y = SCREEN_HEIGHT//2 - 80 + 10
+        right_arrow_button.hovered_line_speed = 5
 
         self.buttons = arcade.SpriteList()
         self.buttons.extend([left_arrow_button, right_arrow_button])
@@ -65,8 +69,9 @@ class Leaderboard:
         arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH - 140, SCREEN_HEIGHT//2 + 80,
                                                 self.leaderboard_title)
         
+        jump_step = 30
         if(self.current_page * self.player_per_page < len(self.players_info) and self.racing_length is not None):
             for idx, (player_name, score) in enumerate(self.players_info[self.current_page * self.player_per_page: (self.current_page + 1) * self.player_per_page]):
-                arcade.draw_text(player_name, SCREEN_WIDTH - 240, SCREEN_HEIGHT - 300 - idx * 40, arcade.color.BLACK, 20, font_name=self.font, align="right", width=100)
-                arcade.draw_text(f'{str(score)}/{self.racing_length}', SCREEN_WIDTH - 100, SCREEN_HEIGHT - 300 - idx * 40, arcade.color.BLACK, 20, font_name=self.font)
+                arcade.draw_text(player_name, SCREEN_WIDTH - 240, SCREEN_HEIGHT - 300 - idx * jump_step, arcade.color.BLACK, 14, font_name=self.font, align="right", width=100)
+                arcade.draw_text(f'{str(score)}/{self.racing_length}', SCREEN_WIDTH - 100, SCREEN_HEIGHT - 300 - idx * jump_step, arcade.color.BLACK, 14, font_name=self.font)
 
