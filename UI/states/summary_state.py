@@ -17,9 +17,12 @@ class SummaryState(State):
         self.winner_name = winner_name
 
         self.mode_label = arcade.load_texture("resources/images/traditionalModeLabel.png")
-        self.font = arcade.load_font("resources/fonts/PaytoneOne-Regular.ttf")
+        
+        arcade.load_font("resources/fonts/PaytoneOne-Regular.ttf")
+        arcade.load_font("resources/fonts/UTM ANDROGYNE.TTF")
 
-        self.font2 = arcade.load_font("resources/fonts/UTM ANDROGYNE.TTF")
+        self.font = 'Paytone One'
+        self.font2 = 'UTM Androgyne'
 
         self.score = self.game.proxy.get_user_score(score)
 
@@ -40,7 +43,7 @@ class SummaryState(State):
 
     def request_player_top(self):
         def query_func():
-            player_top = self.get_player_top()
+            player_top = self.game.proxy.get_user_top()
             if player_top != Socket_return.IS_WAITING:
                 self.player_top = player_top
                 return True
@@ -80,7 +83,7 @@ class SummaryState(State):
                                                 self.top_title, 0.6)
         
             if(self.player_top is not None):
-                arcade.draw_text(str(self.player_top()), SCREEN_WIDTH // 2 + 50, SCREEN_HEIGHT//2 - 120, arcade.color.VIVID_VIOLET, 28, font_name=self.font2, align="center", width=100)
+                arcade.draw_text(str(self.player_top), SCREEN_WIDTH // 2 + 50, SCREEN_HEIGHT//2 - 120, arcade.color.VIVID_VIOLET, 28, font_name=self.font2, align="center", width=100)
         
         elif(self.type_of_summary == Summary_type.DISQUALIFIED):
             arcade.draw_text("DISQUALIFIED", SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT//2 + 10, arcade.color.RED, 40, font_name=self.font2, align="center", width=200)

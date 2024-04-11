@@ -126,6 +126,10 @@ class MyGame(arcade.Window):
             self.current_state.on_update(delta_time)
 
     def on_key_press(self, symbol: int, modifiers: int):
+
+        for box in self.popups.copy().values():
+            box.on_key_press(symbol, modifiers)
+
         if(not self.is_notification_on()):
             self.current_state.on_key_press(symbol, modifiers)
 

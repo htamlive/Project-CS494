@@ -26,7 +26,10 @@ class GamePlayState(State):
 
         self.submission_box = arcade.load_texture("resources/images/submissionBox.png")
 
-        self.font = arcade.load_font("resources/fonts/PaytoneOne-Regular.ttf")
+
+        arcade.load_font("resources/fonts/PaytoneOne-Regular.ttf")
+
+        self.font = "Paytone One"
 
 
         self.results = {
@@ -249,15 +252,15 @@ class GamePlayState(State):
         arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2 - 140, SCREEN_HEIGHT//2 + 120, 
                                              self.mode_label, 0.5)
         
-        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH - 140, SCREEN_HEIGHT//2 + 200,
+        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH - 140, SCREEN_HEIGHT//2 + 180,
                                                 self.score_title, 0.5)
         
         
         arcade.draw_scaled_texture_rectangle(150, SCREEN_HEIGHT//2 + 200,
                                                 self.time_title, 0.5)
         
-        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT//2 - 110 + 3,
-                                                self.submission_box,0.9)
+        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT//2 - 110 - 3,
+                                                self.submission_box)
         
 
         # Draw the operands
@@ -271,15 +274,15 @@ class GamePlayState(State):
             arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 80, 
                                                  self.results[self.result], 0.7)
         
-        arcade.draw_text(f'{str(self.current_score)}/{self.racing_length}', SCREEN_WIDTH - 200, SCREEN_HEIGHT//2 + 130, 
-                             arcade.color.BLACK, 40, font_name=self.font, align="center", width=100)
+        arcade.draw_text(f'{str(self.current_score)}/{self.racing_length}', SCREEN_WIDTH - 200, SCREEN_HEIGHT//2 + 120, 
+                             arcade.color.BLACK, 28, font_name=self.font, align="center", width=100)
         
         arcade.draw_text(self.format_time(self.timeleft), 95, SCREEN_HEIGHT//2 + 130, 
                              arcade.color.BLACK, 30, font_name=self.font, align="center", width=100)
         
         if(self.number_of_players is not None):
-            arcade.draw_text(f"# players left", SCREEN_WIDTH - 200, SCREEN_HEIGHT - 80, arcade.color.BLACK, 16, font_name=self.font)
-            arcade.draw_text(f"{self.number_of_players}", SCREEN_WIDTH - 60, SCREEN_HEIGHT - 80, arcade.color.ORANGE_RED, 24, font_name=self.font)
+            arcade.draw_text(f"# players left", SCREEN_WIDTH - 200 - 20, SCREEN_HEIGHT - 80 - 20, arcade.color.BLACK, 16, font_name=self.font)
+            arcade.draw_text(f"{self.number_of_players}", SCREEN_WIDTH - 60, SCREEN_HEIGHT - 80 -20, arcade.color.ORANGE_RED, 24, font_name=self.font)
 
         
         # for idx, player in enumerate(self.players):
