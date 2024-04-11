@@ -161,6 +161,9 @@ class GamePlayState(State):
         user_input = self.input_box.text
         operand1, operator, operand2, result = self.history[-1]
 
+        if(user_input == ''):
+            user_input = '0'
+
         self.game.proxy.submit_answer(user_input, result)
 
 
@@ -169,9 +172,10 @@ class GamePlayState(State):
         def query_func_winner():
             winner = self.game.proxy.check_winner()
             if winner != Socket_return.IS_WAITING:
-                
                 if winner != None:
                     self.game.push_state(SummaryState(self.game, self.mode, self.current_score, Summary_type.WINNER, winner))
+                else:
+                    self.game.waiting_notification.add_query(self.request_next_quest)
                 return True
             return False
 
@@ -188,6 +192,7 @@ class GamePlayState(State):
                     self.result = result
                     self.update_score()
                     self.game.waiting_notification.add_query(query_func_winner)
+                    
                     # self.next_button.set_enabled(True, True)
 
                 return True
@@ -202,22 +207,25 @@ class GamePlayState(State):
         if self.result == Result.CORRECT:
             self.current_score += self.game.proxy.get_user_score(None)
 
+    def request_next_quest(self):
+        def query_func():
+            ret = self.gen_quest()
+            if ret != Socket_return.IS_WAITING:
+                self.history.append(ret)
+                self.result = None
+                self.next_button.set_enabled(False, False)
+                self.renew_input_box()
+                self.go_button.set_enabled(True, True)
+                # self.next_button.set_enabled(False, False)
+                return True
+            
+            return False
+
+        self.game.waiting_notification.add_query(query_func)
+
     def on_next_quest(self):
         if(self.next_button.is_enabled and self.next_button.visible):
-            def query_func():
-                ret = self.gen_quest()
-                if ret != Socket_return.IS_WAITING:
-                    self.history.append(ret)
-                    self.result = None
-                    self.next_button.set_enabled(False, False)
-                    self.renew_input_box()
-                    self.go_button.set_enabled(True, True)
-                    # self.next_button.set_enabled(False, False)
-                    return True
-                
-                return False
-
-            self.game.waiting_notification.add_query(query_func)
+            self.request_next_quest()
             
 
         

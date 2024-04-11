@@ -23,8 +23,8 @@ class Leaderboard:
 
         right_arrow_button = HoverLineButton("resources/images/rightArrow.png", 0.15)
         right_arrow_button.click_scale_factor = 0.3
-        right_arrow_button.center_x = SCREEN_WIDTH - 60
-        right_arrow_button.center_y = SCREEN_HEIGHT//2 - 80 -10
+        right_arrow_button.center_x = SCREEN_WIDTH - 60 - 10
+        right_arrow_button.center_y = SCREEN_HEIGHT//2 - 80 + 10
         right_arrow_button.hovered_line_speed = 5
 
         self.buttons = arcade.SpriteList()
