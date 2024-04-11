@@ -127,10 +127,6 @@ class Proxy:
 
         self.result = result
 
-    """
-    TODO
-    """
-
     def request_racing_length(self):
         return 100
 

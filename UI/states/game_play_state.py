@@ -170,7 +170,7 @@ class GamePlayState(State):
         self.game.proxy.submit_answer(user_input, result)
 
 
-        self.go_button.set_enabled(False, False)
+        # self.go_button.set_enabled(False, False)
 
         def query_func_winner():
             winner = self.game.proxy.check_winner()
@@ -219,7 +219,7 @@ class GamePlayState(State):
                 self.result = None
                 self.next_button.set_enabled(False, False)
                 self.renew_input_box()
-                self.go_button.set_enabled(True, True)
+                # self.go_button.set_enabled(True, True)
                 # self.next_button.set_enabled(False, False)
                 return True
             
