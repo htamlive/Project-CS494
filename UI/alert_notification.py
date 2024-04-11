@@ -68,7 +68,7 @@ class AlertNotification(NotificationBase):
         self.buttons.draw()
 
         for button in self.buttons:
-            button.draw_additional_elements()
+            button.draw_effect()
 
         arcade.draw_text(self.message, SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 50, arcade.color.BLACK, 20,
                          align="center", width=300)
