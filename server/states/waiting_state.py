@@ -25,8 +25,7 @@ class WaitingState(State):
 
         player_name = message.name
         if (
-            client_address in self.context.players
-            or len(self.context.players) == MAX_PLAYERS
+            len(self.context.players) == MAX_PLAYERS
             or any(
                 player.name == player_name for player in self.context.players.values()
             )
