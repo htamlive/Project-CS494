@@ -254,6 +254,7 @@ class WinnerMessage(Message):
     type = MessageType.WINNER
     format = "<B6s"
 
+    have_winner: bool
     name: str
 
     def pack(self):
@@ -262,9 +263,9 @@ class WinnerMessage(Message):
 
     @classmethod
     def unpack_data(cls, data):
-        _, name = struct.unpack(cls.format, data)
+        _, have_winner, name = struct.unpack(cls.format, data)
         name = name.decode().rstrip("\x00")
-        return cls(name)
+        return cls(have_winner, name)
 
 
 class DisqualifiedMessage(Message):
