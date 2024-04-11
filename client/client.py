@@ -103,8 +103,8 @@ class Client(Proxy):
                 raise Exception("Unexpected message type %s", rs)
 
     def gen_quest(self):
-        # if self._message_queue.empty():
-        #     return Socket_return.IS_WAITING
+        if self._message_queue.empty():
+            return Socket_return.IS_WAITING
         message = self.wait_for_message()
         match message:
             case ServerMessage(QuestionMessage(first_number, second_number, operation)):
@@ -119,10 +119,9 @@ class Client(Proxy):
                     case 0x4:
                         operation = Operator.DIVIDE
                 return first_number, operation, second_number, None
-            
+
         return Socket_return.IS_WAITING
-            
-        
+
     def on_ready(self):
         self.send_message(message=ReadyMessage(True))
 
@@ -146,6 +145,7 @@ class Client(Proxy):
         self.send_message(AnswerMessage(int(answer)))
 
     def check_result(self):
+        print("Checking result")
         if self._message_queue.empty():
             return Socket_return.IS_WAITING
         response = self.wait_for_message()
@@ -208,9 +208,9 @@ class Client(Proxy):
         return self._remaining_players
 
     def check_winner(self):
-        print("Checking winner")
         if self._message_queue.empty():
             return Socket_return.IS_WAITING
+        print("Checking winner")
         resp = self.wait_for_message()
         match resp:
             case ServerMessage(WinnerMessage(have_winner, winner_name)):
