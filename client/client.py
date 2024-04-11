@@ -103,7 +103,7 @@ class Client(Proxy):
                 raise Exception("Unexpected message type %s", rs)
 
     def get_current_players(self):
-        return self._current_player_list
+        return self._players_in_waiting_room
 
     def gen_quest(self):
         if self._message_queue.empty():
