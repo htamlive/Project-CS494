@@ -10,6 +10,8 @@ class MyGame(arcade.Window):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
         arcade.set_background_color(arcade.color.WHITE)
 
+        self.mouse_state = (0, 0, 0, 0)
+
         # Load the background image
         self.background = arcade.load_texture("resources/images/background.png")
         self.title = arcade.load_texture("resources/images/title.png")
@@ -37,11 +39,15 @@ class MyGame(arcade.Window):
             for button in self.current_state.buttons:
                 button.is_hover = False
 
+        new_state.on_mouse_motion(*self.mouse_state)
+
         self.state_stack.append(new_state)
 
     def pop_state(self):
         if len(self.state_stack) > 1:
             self.state_stack.pop()
+
+        self.current_state.on_mouse_motion(*self.mouse_state)
         
     
     def return_menu(self):
@@ -97,6 +103,8 @@ class MyGame(arcade.Window):
                 return True
 
     def on_mouse_motion(self, x, y, dx, dy):
+        self.mouse_state = (x, y, dx, dy)
+
         for _, box in self.popups.copy().items():
             box.on_mouse_motion(x, y, dx, dy)
 
@@ -124,6 +132,8 @@ class MyGame(arcade.Window):
                 button.is_hover = False
 
         if(not self.is_notification_on()):
+            for button in self.current_state.buttons:
+                button.on_mouse_motion(*self.mouse_state)
             self.current_state.on_update(delta_time)
 
     def on_key_press(self, symbol: int, modifiers: int):

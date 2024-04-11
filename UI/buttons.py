@@ -33,6 +33,7 @@ class ImageButton(arcade.Sprite):
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.is_hover and self.is_enabled:
+            # print("clicked")
             self.is_clicked = True
             self.click_timer = self.click_animation_duration
 
@@ -105,18 +106,19 @@ class HoverLineButton(ImageButton):
 
     def on_update(self, delta_time):
         super().on_update(delta_time)
-        if self.is_hover:
-            if self.hovered_line_current_width + self.hovered_line_speed < self.hovered_line_max_width:
-                self.hovered_line_timer += delta_time
-                if self.hovered_line_timer > 0.05:
-                    self.hovered_line_current_width += self.hovered_line_speed
+        if(self.is_enabled):
+            if self.is_hover:
+                if self.hovered_line_current_width + self.hovered_line_speed < self.hovered_line_max_width:
+                    self.hovered_line_timer += delta_time
+                    if self.hovered_line_timer > 0.05:
+                        self.hovered_line_current_width += self.hovered_line_speed
+                else:
+                    self.hovered_line_current_width = self.hovered_line_max_width
             else:
-                self.hovered_line_current_width = self.hovered_line_max_width
-        else:
-            if self.hovered_line_current_width - self.hovered_line_speed > 0:
-                self.hovered_line_timer -= delta_time
-                if self.hovered_line_timer >= 0:
-                    self.hovered_line_current_width -= self.hovered_line_speed
-            else:
-                self.hovered_line_timer = 0
-                self.hovered_line_current_width = 0
+                if self.hovered_line_current_width - self.hovered_line_speed > 0:
+                    self.hovered_line_timer -= delta_time
+                    if self.hovered_line_timer >= 0:
+                        self.hovered_line_current_width -= self.hovered_line_speed
+                else:
+                    self.hovered_line_timer = 0
+                    self.hovered_line_current_width = 0

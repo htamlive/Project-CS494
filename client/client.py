@@ -35,9 +35,6 @@ class Client(Proxy):
         self._position = 1
         self._race_length = 0
         self._name = ""
-        self._number_of_ready_players = 0
-        self._number_of_players = 0
-        self._remaining_players = 0
         self._current_answer_result = None
         self._players_in_waiting_room = []
         self._current_player_list = []
@@ -49,6 +46,17 @@ class Client(Proxy):
         self._connect()
         self._temp_msgs = []
         logger.info("Client initialized")
+
+    def _reset(self):
+        self._position = 1
+        self._race_length = 0
+        self._name = ""
+        self._number_of_ready_players = 0
+        self._number_of_players = 0
+        self._remaining_players = 0
+        self._current_answer_result = None
+        self._players_in_waiting_room = []
+        self._current_player_list = []
 
     def receive_message(self):
         return self.receiver.receive_message()
@@ -79,9 +87,6 @@ class Client(Proxy):
         logger.info("Received message: %s", msg)
         return msg
 
-    def get_score(self):
-        return self._position
-
     def send_message(self, message: Message):
         self.client_socket.send(message.pack())
 
@@ -91,6 +96,7 @@ class Client(Proxy):
     # ================== Proxy methods ================== #
 
     def register(self, name, mode):
+        self._reset()
         self.send_message(JoinMessage(0, name))
         rs = self.wait_for_message()
         match rs:
@@ -103,7 +109,7 @@ class Client(Proxy):
                 raise Exception("Unexpected message type %s", rs)
 
     def get_current_players(self):
-        return self._current_player_list
+        return self._players_in_waiting_room
 
     def gen_quest(self):
         if self._message_queue.empty():
@@ -182,6 +188,7 @@ class Client(Proxy):
                 if len(self._temp_msgs) == 1:
                     self._current_player_list = []
                 self._current_player_list.append((player, new_pos))
+                self._current_player_list.sort(key=lambda x: x[1])
                 if player == self._name:
                     self._position = new_pos
                     if is_correct:
@@ -213,13 +220,22 @@ class Client(Proxy):
         self.send_message(DisconnectMessage())
 
     def get_user_top(self):
-        return 1
+        sorted_list = sorted(self._current_player_list, key=lambda x: x[1], reverse=True)
+        print(f'Sorted list: {sorted_list}')
+        user_name = self._name
+        for i, player in enumerate(sorted_list):
+            if player[0] == user_name:
+                return i + 1
+            
 
     def request_racing_length(self):
         return self._race_length
 
     def get_user_score(self, stored_score):
-        return self._position
+        print("Getting user score")
+        for player in self._current_player_list:
+            if player[0] == self._name:
+                return player[1]
 
     def init_time(self):
         self.time_left = 15
@@ -229,16 +245,16 @@ class Client(Proxy):
         return self.time_left
 
     def get_number_of_players(self):
-        return self._number_of_players
+        return len(self._players_in_waiting_room)
 
     def get_current_players_with_scores(self):
         return self._current_player_list
 
     def get_number_of_ready_players(self):
-        return self._number_of_ready_players
+        return len([player for player in self._players_in_waiting_room if player[1]])
 
     def get_number_of_players_in_game(self):
-        return self._remaining_players
+        return len(self._current_player_list)
 
     def check_winner(self):
         if self._message_queue.empty():

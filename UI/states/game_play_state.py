@@ -40,11 +40,12 @@ class GamePlayState(State):
 
         self.result = None
         self.number_of_players = None
-        self.current_score = 0
+        self.current_score = self.game.proxy.get_user_score(None)
         self.timeleft = self.init_time()
         self.players_info = []
 
         self.request_racing_length()
+        self.update_number_players()
 
         self.operators = {
             Operator.ADD: arcade.load_texture("resources/images/operators/addOperator.png"),
@@ -107,8 +108,6 @@ class GamePlayState(State):
 
         self.next_button.set_enabled(False, False)
 
-        
-
         self.leaderboard = Leaderboard(self.game.proxy)
 
         self.buttons.extend([self.go_button, leave_button, self.next_button])
@@ -170,7 +169,7 @@ class GamePlayState(State):
         self.game.proxy.submit_answer(user_input, result)
 
 
-        self.go_button.set_enabled(False, False)
+        # self.go_button.set_enabled(False, False)
 
         def query_func_winner():
             winner = self.game.proxy.check_winner()
@@ -207,8 +206,7 @@ class GamePlayState(State):
     
 
     def update_score(self):
-        if self.result == Result.CORRECT:
-            self.current_score += self.game.proxy.get_user_score(None)
+        self.current_score = self.game.proxy.get_user_score(None)
 
     def request_next_quest(self):
         def query_func():
@@ -219,7 +217,7 @@ class GamePlayState(State):
                 self.result = None
                 self.next_button.set_enabled(False, False)
                 self.renew_input_box()
-                self.go_button.set_enabled(True, True)
+                # self.go_button.set_enabled(True, True)
                 # self.next_button.set_enabled(False, False)
                 return True
             
@@ -323,8 +321,6 @@ class GamePlayState(State):
         if number_of_players != Socket_return.IS_WAITING:
             self.number_of_players = number_of_players
 
-
-
     def on_update(self, delta_time):
         super().on_update(delta_time)
         self.update_time(delta_time)
@@ -332,6 +328,14 @@ class GamePlayState(State):
         self.update_number_players()
         self.timeleft = self.game.proxy.get_time_left()
         self.ui_manager.on_update(delta_time)
+
+        self.check_input()
+
+    def check_input(self):
+        current_input = self.input_box.text
+        #remove all characters that are not digits
+        current_input = ''.join([char for char in current_input if char.isdigit()])
+        self.input_box.text = current_input
 
 
     def on_key_release(self, symbol: int, modifiers: int):

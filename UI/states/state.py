@@ -8,6 +8,7 @@ class State:
 
         self.ui_manager = UIManager()
 
+
     def is_notification_on(self):
         return False
         

@@ -26,17 +26,34 @@ class ChooseModeState(State):
 
         self.mode = Mode.TRADITIONAL
 
+
+        self.init_pop_up_box()
+
         traditional_button.on_click = lambda : self.set_mode(Mode.TRADITIONAL)
-        blitz_button.on_click = lambda : self.set_mode(Mode.BLITZ)
+        # blitz_button.on_click = lambda : self.set_mode(Mode.BLITZ)
+        blitz_button.on_click = lambda : self.game.show_popup('blitz notification')
 
         self.buttons.extend([traditional_button, blitz_button])
 
-        self.init_result_box()
+        
 
 
         def on_ok():
+            current_text = self.input_popup.get_current_text()
+            if current_text == '':
+                self.input_popup.show_noti("Name cannot be empty", arcade.color.RED)
+                return
+            
+            # can contains _ and numbers
+            valid_chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
+            if len(current_text) > 10 or any([c not in valid_chars for c in current_text]):
+                self.input_popup.show_noti("Invalid name", arcade.color.RED)
+                return
+            
             def query_func():
                 current_text = self.input_popup.get_current_text()
+
+
                 ret = self.register_with_name(current_text)
 
                 if ret != Socket_return.IS_WAITING:
@@ -63,7 +80,13 @@ class ChooseModeState(State):
 
         self.game.popups['input name'] = self.input_popup
 
-    def init_result_box(self):
+    def init_pop_up_box(self):
+
+        self.blitz_notification = OKNotification("Blitz mode is not available yet", on_ok = lambda: self.game.turn_off_notification('blitz notification'))
+
+        self.game.popups['blitz notification'] = self.blitz_notification
+        
+    
         def on_ok():
             self.game.push_state(WaitingRoomState(self.game, self.mode))
             self.game.turn_off_notification('Registration notification')
