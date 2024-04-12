@@ -5,7 +5,7 @@ INTERNETWORKING PROTOCOL CS494
 Racing Arena is a multiplayer Q&A game where a server acts as a referee for multiplayers. Players register with unique nicknames to join. In each round, the server sends an arithmetic expression to the players, who must solve it and respond quickly. Points are granted based on performance. Players move forward or backward in the race based on their points, aiming to reach the finish line first to win.
 
 ![alt text](https://github.com/htamlive/Project-CS494/blob/main/screenshot/homescreen.png)
-[Video demo]()
+[Video demo](https://www.youtube.com/watch?v=hElfH3noneg)
 
 ## Requirements
 
