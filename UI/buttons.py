@@ -33,7 +33,7 @@ class ImageButton(arcade.Sprite):
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.is_hover and self.is_enabled:
-            print("clicked")
+            # print("clicked")
             self.is_clicked = True
             self.click_timer = self.click_animation_duration
 

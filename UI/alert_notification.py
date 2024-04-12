@@ -269,3 +269,31 @@ class WaitingNotification(NotificationBase):
 
         arcade.draw_text(self.message + add_dot, SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 20, arcade.color.BLACK, 20,
                          align="center", width=300,font_name=self.font)
+        
+
+
+class QuestResultNotification(NotificationBase):
+    def __init__(self, result, on_ok=lambda: None):
+        super().__init__()
+        self.on_ok = on_ok
+
+        self.result = result
+
+        self.alert_box = arcade.load_texture("resources/images/rectangleBorder.png")
+
+        self.results = {
+            Result.CORRECT: arcade.load_texture("resources/images/correctResult.png"),
+            Result.INCORRECT: arcade.load_texture("resources/images/incorrectResult.png"),
+        }
+
+
+    def draw(self):
+        if not self.enabled:
+            return
+        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, self.alert_box, 1.5)
+
+
+        arcade.draw_scaled_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 20, self.results[self.result], 1.5)
+
+        # arcade.draw_text(self.message, SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 + 50, arcade.color.BLACK, 20,
+        #                  align="center", width=300)

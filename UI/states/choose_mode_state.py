@@ -44,7 +44,9 @@ class ChooseModeState(State):
                 self.input_popup.show_noti("Name cannot be empty", arcade.color.RED)
                 return
             
-            if not current_text.lower().isalnum() or len(current_text) > 10:
+            # can contains _ and numbers
+            valid_chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
+            if len(current_text) > 10 or any([c not in valid_chars for c in current_text]):
                 self.input_popup.show_noti("Invalid name", arcade.color.RED)
                 return
             

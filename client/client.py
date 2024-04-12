@@ -220,7 +220,13 @@ class Client(Proxy):
         self.send_message(DisconnectMessage())
 
     def get_user_top(self):
-        return max([player[1] for player in self._current_player_list])
+        sorted_list = sorted(self._current_player_list, key=lambda x: x[1], reverse=True)
+        print(f'Sorted list: {sorted_list}')
+        user_name = self._name
+        for i, player in enumerate(sorted_list):
+            if player[0] == user_name:
+                return i + 1
+            
 
     def request_racing_length(self):
         return self._race_length
